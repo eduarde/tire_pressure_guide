@@ -15,7 +15,6 @@ from .schemas import (
 
 
 class PressureCalculator:
-  
     # Ride style fudge factors
     RIDE_STYLE_FACTORS = {
         RideStyleEnum.CYCLOCROSS: 0.6,
@@ -121,7 +120,7 @@ class PressureCalculator:
         wheel_diameter: float,
     ) -> float:
         """
-        Calculate recommended tire pressure using SRAM algorithm.
+        Calculate recommended tire pressure.
 
         Formula: PSI = base * weight_factor * wheel_factor * fudge_factors
         """
@@ -149,7 +148,7 @@ class PressureCalculator:
         c = 4.0 * math.pi**2 * outer_radius * inner_radius
 
         # 4. Base pressure from regression model
-        base = (10**8.684670773) * (c ** -1.304556655)
+        base = (10**8.684670773) * (c**-1.304556655)
 
         # 5. Calculate weight factor
         weight_sum = bike_weight_kg + rider_weight_kg
