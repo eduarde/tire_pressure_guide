@@ -1,4 +1,4 @@
-#  Tire Pressure Recommndation tool
+#  Tire Pressure Recommndation (WIP)
 
 A comprehensive bicycle tire pressure recommendation system that provides optimal pressure calculations based on rider weight, bike specifications, tire dimensions, and riding conditions.
 
