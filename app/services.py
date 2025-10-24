@@ -17,16 +17,13 @@ class PressureCalculator:
         self.weight = None
         self.ride_type = None
 
-    def calculate(self) -> TirePressure:
+    def _compute_base_pressure(self, ride_style: RideStyleEnum) -> tuple[float, float]:
         """
-        Calculate recommended front and rear tire pressures.
+        Compute base pressures
         """
 
         # Total system weight
         total_weight = self.weight.rider + self.weight.bike
-
-        # weight distribution - adjusted to match expected rear pressures
-        ride_style = getattr(self.ride_type, "style", RideStyleEnum.ROAD).upper()
 
         # The rear should only be slightly higher than front
         if ride_style in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
@@ -52,53 +49,76 @@ class PressureCalculator:
 
         base_factor = base_factors.get(ride_style, 1.0)
 
-        # Calculate base pressures
         front_base = front_weight * base_factor
         rear_base = rear_weight * base_factor
 
-        def get_width_factor(width_mm: float, discipline: RideStyleEnum):
+        return front_base, rear_base
+
+    def _compute_width_factor(self, ride_style: RideStyleEnum) -> tuple[float, float]:
+        def interpolate_width_factor(
+            width_mm: float, curve: list[tuple[float, float]]
+        ) -> float:
+            """Linearly interpolate a factor based on tire width and a (width, factor) curve."""
+            for i, (limit, factor) in enumerate(curve):
+                if width_mm <= limit:
+                    # If it's below or equal to the first point, just return it
+                    if i == 0:
+                        return factor
+                    # Get previous point
+                    prev_limit, prev_factor = curve[i - 1]
+                    # Linear interpolation ratio between the two points
+                    ratio = (width_mm - prev_limit) / (limit - prev_limit)
+                    return prev_factor + (factor - prev_factor) * ratio
+            # If wider than last defined point
+            return curve[-1][1]
+
+        def get_width_factor(width_mm: float, discipline: RideStyleEnum) -> float:
             """tire width pressure adjustment formula"""
-            if discipline in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
-                # Road/CX: more sensitive to width changes
-                if width_mm <= 23:
-                    return 1.25
-                elif width_mm <= 25:
-                    return 1.15
-                elif width_mm <= 28:
-                    return 1.00
-                elif width_mm <= 32:
-                    return 0.88
-                elif width_mm <= 35:
-                    return 0.78
-                else:
-                    return 0.70
-            elif discipline == RideStyleEnum.GRAVEL:
-                # Gravel: different curve
-                if width_mm <= 32:
-                    return 1.10
-                elif width_mm <= 35:
-                    return 1.00
-                elif width_mm <= 40:
-                    return 0.90
-                elif width_mm <= 45:
-                    return 0.82
-                else:
-                    return 0.75
-            else:  # MTB
-                # MTB: much wider range, different formula
-                if width_mm <= 58:  # ~2.3"
-                    return 1.00
-                elif width_mm <= 64:  # ~2.5"
-                    return 0.92
-                elif width_mm <= 70:  # ~2.8"
-                    return 0.85
-                else:
-                    return 0.80
+
+            width_curves = {
+                RideStyleEnum.ROAD: [
+                    (23, 1.25),
+                    (25, 1.15),
+                    (28, 1.00),
+                    (32, 0.88),
+                    (35, 0.78),
+                    (float("inf"), 0.70),
+                ],
+                RideStyleEnum.CYCLOCROSS: [  # can reuse or tweak independently
+                    (23, 1.25),
+                    (25, 1.15),
+                    (28, 1.00),
+                    (32, 0.88),
+                    (35, 0.78),
+                    (float("inf"), 0.70),
+                ],
+                RideStyleEnum.GRAVEL: [
+                    (32, 1.10),
+                    (35, 1.00),
+                    (40, 0.90),
+                    (45, 0.82),
+                    (float("inf"), 0.75),
+                ],
+                RideStyleEnum.MTB_XC: [
+                    (58, 1.00),
+                    (64, 0.92),
+                    (70, 0.85),
+                    (float("inf"), 0.80),
+                ],
+            }
+
+            curve = width_curves.get(discipline, width_curves[RideStyleEnum.MTB_XC])
+            return interpolate_width_factor(width_mm, curve)
 
         front_width_factor = get_width_factor(self.front_tire.width, ride_style)
         rear_width_factor = get_width_factor(self.rear_tire.width, ride_style)
 
-        # casing adjustments - more nuanced
+        return front_width_factor, rear_width_factor
+
+    def _compute_casing_factor(
+        self, front_casing: str, rear_casing: str
+    ) -> tuple[float, float]:
+        """casing adjustments - more nuanced"""
         casing_factors = {
             CasingEnum.THIN: 0.92,  # Supple casings: lower pressure for comfort
             CasingEnum.STANDARD: 1.00,  # Baseline
@@ -106,33 +126,37 @@ class PressureCalculator:
             CasingEnum.DOWNHILL_CASING: 1.15,  # Very stiff: significant pressure increase
         }
 
-        front_casing = getattr(self.front_tire, "casing", CasingEnum.STANDARD).upper()
-        rear_casing = getattr(self.rear_tire, "casing", CasingEnum.STANDARD).upper()
-
         front_casing_factor = casing_factors.get(front_casing, 1.00)
         rear_casing_factor = casing_factors.get(rear_casing, 1.00)
 
-        # surface adjustments - discipline specific (fine-tuned for test values)
-        surface = getattr(self.ride_type, "surface", SurfaceEnum.DRY).upper()
+        return front_casing_factor, rear_casing_factor
+
+    def _compute_surface_factor(
+        self, surface: SurfaceEnum, ride_style: RideStyleEnum
+    ) -> float:
+        """surface adjustments - discipline specific (fine-tuned for test values)"""
 
         if ride_style in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
-            surface_factor = 0.90 if surface == SurfaceEnum.WET else 1.00
+            return 0.90 if surface == SurfaceEnum.WET else 1.00
         elif ride_style == RideStyleEnum.GRAVEL:
             surface_factors = {
                 SurfaceEnum.DRY: 1.00,
                 SurfaceEnum.WET: 0.90,
                 SurfaceEnum.MIXED: 0.95,
             }  # Gravel wet: 26.9/29.9 = 0.90
-            surface_factor = surface_factors.get(surface, 1.00)
+            return surface_factors.get(surface, 1.00)
         else:  # MTB
             surface_factors = {
                 SurfaceEnum.DRY: 1.00,
                 SurfaceEnum.WET: 0.90,
                 SurfaceEnum.MIXED: 0.95,
             }  # MTB wet: 16.7/18.5 = 0.90
-            surface_factor = surface_factors.get(surface, 1.00)
+            return surface_factors.get(surface, 1.00)
 
-        # rim type considerations
+    def _compute_rim_factor(
+        self, front_rim: RimTypeEnum, rear_rim: RimTypeEnum
+    ) -> tuple[float, float]:
+        """rim type considerations"""
         rim_factors = {
             RimTypeEnum.HOOKLESS: 0.95,  # hookless optimization
             RimTypeEnum.HOOKS: 1.00,
@@ -140,13 +164,11 @@ class PressureCalculator:
             RimTypeEnum.TUBES: 0.98,  # Tubes: slightly conservative
         }
 
-        front_rim = getattr(self.front_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
-        rear_rim = getattr(self.rear_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
+        return rim_factors.get(front_rim, 1.00), rim_factors.get(rear_rim, 1.00)
 
-        front_rim_factor = rim_factors.get(front_rim, 1.00)
-        rear_rim_factor = rim_factors.get(rear_rim, 1.00)
+    def _compute_rim_width_factor(self) -> tuple[float, float]:
+        """Rim width influence (wider internal = lower pressure)"""
 
-        # rim width influence (wider internal = lower pressure)
         def get_rim_width_factor(internal_width_mm):
             """Wider internal rim width allows lower pressure"""
             if internal_width_mm <= 17:
@@ -163,8 +185,44 @@ class PressureCalculator:
         front_rim_width = getattr(self.front_wheel, "rim_width", 21)
         rear_rim_width = getattr(self.rear_wheel, "rim_width", 21)
 
-        front_rim_width_factor = get_rim_width_factor(front_rim_width)
-        rear_rim_width_factor = get_rim_width_factor(rear_rim_width)
+        return get_rim_width_factor(front_rim_width), get_rim_width_factor(
+            rear_rim_width
+        )
+
+    def calculate(self) -> TirePressure:
+        """
+        Calculate recommended front and rear tire pressures.
+        """
+
+        # get config
+        ride_style = getattr(self.ride_type, "style", RideStyleEnum.ROAD).upper()
+        front_casing = getattr(self.front_tire, "casing", CasingEnum.STANDARD).upper()
+        rear_casing = getattr(self.rear_tire, "casing", CasingEnum.STANDARD).upper()
+        surface = getattr(self.ride_type, "surface", SurfaceEnum.DRY).upper()
+        front_rim = getattr(self.front_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
+        rear_rim = getattr(self.rear_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
+
+        # BASE
+        front_base, rear_base = self._compute_base_pressure(ride_style)
+
+        # WIDTH FACTOR
+        front_width_factor, rear_width_factor = self._compute_width_factor(ride_style)
+
+        # CASING FACTOR
+        front_casing_factor, rear_casing_factor = self._compute_casing_factor(
+            front_casing, rear_casing
+        )
+
+        # SURFACE FACTOR
+        surface_factor = self._compute_surface_factor(surface, ride_style)
+
+        # RIM TYPE FACTOR
+        front_rim_factor, rear_rim_factor = self._compute_rim_factor(
+            front_rim, rear_rim
+        )
+
+        # RIM WIDTH FACTOR
+        front_rim_width_factor, rear_rim_width_factor = self._compute_rim_width_factor()
 
         # Calculate final pressures with methodology
         front_pressure = (
