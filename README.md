@@ -53,47 +53,52 @@ Interactive API documentation is available at:
 
 ### Example Request
 
-```python
-import requests
-
-data = {
-    "ride_type": {
-        "style": "ROAD",
-        "surface": "DRY"
-    },
-    "weight": {
-        "rider": 75.0,
-        "bike": 8.0
-    },
+```
+curl -X 'POST' \
+  'http://127.0.0.1:8085/compute' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "bike": {
+    "name": "test",
+    "discipline": "ROAD",
     "front_tire": {
-        "position": "FRONT",
-        "casing": "STANDARD",
-        "width": 28.0,
-        "unit": "MM"
-    },
-    "rear_tire": {
-        "position": "REAR",
-        "casing": "STANDARD",
-        "width": 28.0,
-        "unit": "MM"
+      "width": 28,
+      "position": "FRONT",
+      "casing": "STANDARD",
+      "unit": "MM"
     },
     "front_wheel": {
-        "position": "FRONT",
-        "diameter": "700C",
-        "rim_type": "HOOKLESS",
-        "rim_width": 21.0
+      "rim_width": 23,
+      "rim_type": "HOOKLESS",
+      "position": "FRONT",
+      "diameter": "700C"
+    },
+    "rear_tire": {
+      "width": 28,
+      "position": "FRONT",
+      "casing": "STANDARD",
+      "unit": "MM"
     },
     "rear_wheel": {
-        "position": "REAR",
-        "diameter": "700C",
-        "rim_type": "HOOKLESS",
-        "rim_width": 21.0
+      "rim_width": 23,
+      "rim_type": "HOOKLESS",
+      "position": "FRONT",
+      "diameter": "700C"
+    },
+    "weight": {
+      "value": 6.8,
+      "unit": "kg"
     }
-}
-
-response = requests.post("http://localhost:8000/calculate", json=data)
-print(response.json())
+  },
+  "rider_weight": {
+      "value": 58,
+      "unit": "kg"
+    },
+  "surface": "DRY"
+}'
 ```
+
 
 Expected output:
 ```json

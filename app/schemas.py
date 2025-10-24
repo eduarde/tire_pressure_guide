@@ -121,6 +121,7 @@ class TirePressure(BaseModel):
 # --- Request Models ---
 
 
-class TirePresssureRequest(BaseModel):
+class TirePressureRequest(BaseModel):
     bike: Bike
-    rider_weight: float
+    rider_weight: Weight
+    surface: SurfaceEnum
