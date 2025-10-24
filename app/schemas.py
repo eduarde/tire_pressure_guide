@@ -8,11 +8,16 @@ class PressureUnitEnum(StrEnum):
 
 
 class WidthUnitEnum(StrEnum):
-    IN = ("IN",)
+    IN = "IN"
     MM = "MM"
 
 
-class RideStyleEnum(StrEnum):
+class WeightUnitEnum(StrEnum):
+    LBS = ("lbs",)
+    KG = "kg"
+
+
+class DisciplineEnum(StrEnum):
     ROAD = "ROAD"
     CYCLOCROSS = "CYCLOCROSS"
     GRAVEL = "GRAVEL"
@@ -65,20 +70,13 @@ class TirePressure(BaseModel):
     unit: PressureUnitEnum
 
 
-class RideType(BaseModel):
-    style: RideStyleEnum
-    surface: SurfaceEnum
+# --- Component Models ---
 
 
-class Weight(BaseModel):
-    rider: float  # in kg
-    bike: float  # in kg
-
-
-class TireType(BaseModel):
+class Tire(BaseModel):
+    width: float
     position: PositionEnum
     casing: CasingEnum
-    width: float
     unit: WidthUnitEnum
 
     def get_width_mm(self) -> float:
@@ -89,10 +87,29 @@ class TireType(BaseModel):
             return self.width
 
 
-
-
 class Wheel(BaseModel):
+    rim_width: float
+    rim_type: RimTypeEnum
     position: PositionEnum
     diameter: DiameterEnum
-    rim_type: RimTypeEnum
-    rim_width: float
+
+
+class Weight(BaseModel):
+    value: float
+    unit: WeightUnitEnum
+
+    def in_kg(self) -> float:
+        return self.value * 0.453592 if self.unit == WeightUnitEnum.LBS else self.value
+
+
+# --- Bike Model (for database) ---
+
+
+class Bike(BaseModel):
+    name: str
+    discipline: DisciplineEnum
+    front_tire: Tire
+    front_wheel: Wheel
+    rear_tire: Tire
+    rear_wheel: Wheel
+    weight: Weight

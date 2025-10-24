@@ -1,30 +1,29 @@
 import math
 from .schemas import (
-    TireType,
-    Weight,
-    RideType,
-    Wheel,
-    TirePressure,
     PressureUnitEnum,
-    RideStyleEnum,
+    DisciplineEnum,
     SurfaceEnum,
     CasingEnum,
     RimTypeEnum,
     DiameterEnum,
+    Tire,
+    Weight,
+    Wheel,
+    TirePressure,
 )
 
 
 class PressureCalculator:
     # Ride style fudge factors
-    RIDE_STYLE_FACTORS = {
-        RideStyleEnum.CYCLOCROSS: 0.6,
-        RideStyleEnum.MTB_DOWNHILL: 1.1,
-        RideStyleEnum.MTB_ENDURO: 1.05,
-        RideStyleEnum.FATBIKE: 1.0,
-        RideStyleEnum.GRAVEL: 0.9,
-        RideStyleEnum.ROAD: 1.0,
-        RideStyleEnum.MTB_TRAIL: 1.05,
-        RideStyleEnum.MTB_XC: 0.9,
+    DISCIPLINE_FACTORS = {
+        DisciplineEnum.CYCLOCROSS: 0.6,
+        DisciplineEnum.MTB_DOWNHILL: 1.1,
+        DisciplineEnum.MTB_ENDURO: 1.05,
+        DisciplineEnum.FATBIKE: 1.0,
+        DisciplineEnum.GRAVEL: 0.9,
+        DisciplineEnum.ROAD: 1.0,
+        DisciplineEnum.MTB_TRAIL: 1.05,
+        DisciplineEnum.MTB_XC: 0.9,
     }
 
     # Wheel position factors
@@ -96,8 +95,11 @@ class PressureCalculator:
         self.rear_tire = None
         self.front_wheel = None
         self.rear_wheel = None
-        self.weight = None
+        self.bike_weight = None
+        self.rider_weight = None
         self.ride_type = None
+        self.discipline = None
+        self.surface = None
 
     def _rim_width_lookup(self, tire_width: float) -> float:
         """Get the compatible rim width based on tire width."""
@@ -110,7 +112,7 @@ class PressureCalculator:
         self,
         rider_weight_kg: float,
         bike_weight_kg: float,
-        ride_style: RideStyleEnum,
+        discipline: DisciplineEnum,
         rim_type: RimTypeEnum,
         surface: SurfaceEnum,
         tire_width_mm: float,
@@ -126,12 +128,12 @@ class PressureCalculator:
         """
 
         # 1. Get fudge factors
-        ride_factor = self.RIDE_STYLE_FACTORS.get(ride_style, 1.0)
+        ride_factor = self.DISCIPLINE_FACTORS.get(discipline, 1.0)
         wheel_factor = self.WHEEL_POSITION_FACTORS.get(wheel_position, 1.0)
         casing_factor = self.CASING_FACTORS.get(tire_casing, 1.0)
         surface_factor = self.SURFACE_FACTORS.get(surface, 1.0)
 
-        if ride_style == RideStyleEnum.CYCLOCROSS:
+        if discipline == DisciplineEnum.CYCLOCROSS:
             rim_factor = self.RIM_TYPE_CX_FACTORS.get(rim_type, 1.0)
         else:
             rim_factor = self.RIM_TYPE_FACTORS.get(rim_type, 1.0)
@@ -166,13 +168,6 @@ class PressureCalculator:
     def calculate(self) -> TirePressure:
         """Calculate front and rear tire pressures."""
 
-        # Extract parameters
-        ride_style = self.ride_type.style
-        surface = self.ride_type.surface
-
-        rider_weight = self.weight.rider
-        bike_weight = self.weight.bike
-
         front_casing = self.front_tire.casing
         rear_casing = self.rear_tire.casing
 
@@ -191,11 +186,11 @@ class PressureCalculator:
 
         # Calculate front pressure
         front_pressure = self._calculate_recommended_pressure(
-            rider_weight_kg=rider_weight,
-            bike_weight_kg=bike_weight,
-            ride_style=ride_style,
+            rider_weight_kg=self.rider_weight,
+            bike_weight_kg=self.bike_weight,
+            discipline=self.discipline,
             rim_type=front_rim_type,
-            surface=surface,
+            surface=self.surface,
             tire_width_mm=front_width_mm,
             inner_rim_width_mm=front_rim_width,
             tire_casing=front_casing,
@@ -205,11 +200,11 @@ class PressureCalculator:
 
         # Calculate rear pressure
         rear_pressure = self._calculate_recommended_pressure(
-            rider_weight_kg=rider_weight,
-            bike_weight_kg=bike_weight,
-            ride_style=ride_style,
+            rider_weight_kg=self.rider_weight,
+            bike_weight_kg=self.bike_weight,
+            discipline=self.discipline,
             rim_type=rear_rim_type,
-            surface=surface,
+            surface=self.surface,
             tire_width_mm=rear_width_mm,
             inner_rim_width_mm=rear_rim_width,
             tire_casing=rear_casing,
@@ -228,7 +223,7 @@ class PressureCalculatorBuilder:
     def __init__(self):
         self.calculator = PressureCalculator()
 
-    def set_tires(self, front_tire: TireType, rear_tire: TireType):
+    def set_tires(self, front_tire: Tire, rear_tire: Tire):
         self.calculator.front_tire = front_tire
         self.calculator.rear_tire = rear_tire
         return self
@@ -238,12 +233,20 @@ class PressureCalculatorBuilder:
         self.calculator.rear_wheel = rear_wheel
         return self
 
-    def set_weight(self, weight: Weight):
-        self.calculator.weight = weight
+    def set_bike_weight(self, weight: Weight):
+        self.calculator.bike_weight = weight
         return self
 
-    def set_ride_type(self, ride_type: RideType):
-        self.calculator.ride_type = ride_type
+    def set_rider_weight(self, weight: Weight):
+        self.calculator.rider_weight = weight
+        return self
+
+    def set_discipline(self, discipline: DisciplineEnum):
+        self.calculator.discipline = discipline
+        return self
+
+    def set_surface(self, surface: SurfaceEnum):
+        self.calculator.surface = surface
         return self
 
     def build(self) -> PressureCalculator:
