@@ -39,7 +39,6 @@ class CasingEnum(StrEnum):
     THIN = "THIN"
     STANDARD = "STANDARD"
     REINFORCED = "REINFORCED"
-    DOUBLE = "DOUBLE"  # Double ply / downhill
     DOWNHILL_CASING = "DOWNHILL_CASING"
 
 
@@ -55,8 +54,8 @@ class DiameterEnum(StrEnum):
 class RimTypeEnum(StrEnum):
     TUBES = "TUBES"
     TUBULAR = "TUBULAR"
+    HOOKED = "HOOKED"
     HOOKS = "HOOKS"
-    HOOKED = "HOOKED"  # Alias for HOOKS
     HOOKLESS = "HOOKLESS"
 
 

@@ -1,14 +1,97 @@
-from .schemas import TireType, Weight, RideType, Wheel, TirePressure, PressureUnitEnum
-
+import math
 from .schemas import (
+    TireType,
+    Weight,
+    RideType,
+    Wheel,
+    TirePressure,
+    PressureUnitEnum,
     RideStyleEnum,
     SurfaceEnum,
     CasingEnum,
     RimTypeEnum,
+    DiameterEnum,
 )
 
 
 class PressureCalculator:
+  
+    # Ride style fudge factors
+    RIDE_STYLE_FACTORS = {
+        RideStyleEnum.CYCLOCROSS: 0.6,
+        RideStyleEnum.MTB_DOWNHILL: 1.1,
+        RideStyleEnum.MTB_ENDURO: 1.05,
+        RideStyleEnum.FATBIKE: 1.0,
+        RideStyleEnum.GRAVEL: 0.9,
+        RideStyleEnum.ROAD: 1.0,
+        RideStyleEnum.MTB_TRAIL: 1.05,
+        RideStyleEnum.MTB_XC: 0.9,
+    }
+
+    # Wheel position factors
+    WHEEL_POSITION_FACTORS = {
+        "FRONT": 0.94,
+        "REAR": 1.0,
+    }
+
+    # Rim type fudge factors (standard)
+    RIM_TYPE_FACTORS = {
+        RimTypeEnum.HOOKED: 1.03,
+        RimTypeEnum.HOOKLESS: 0.955,
+        RimTypeEnum.TUBES: 1.05,
+        RimTypeEnum.TUBULAR: 1.1,
+    }
+
+    # Rim type fudge factors for cyclocross
+    RIM_TYPE_CX_FACTORS = {
+        RimTypeEnum.HOOKED: 1.03,
+        RimTypeEnum.HOOKLESS: 0.955,
+        RimTypeEnum.TUBES: 1.05,
+        RimTypeEnum.TUBULAR: 0.9,
+    }
+
+    # Casing fudge factors
+    CASING_FACTORS = {
+        CasingEnum.DOWNHILL_CASING: 0.9,
+        CasingEnum.REINFORCED: 0.95,
+        CasingEnum.STANDARD: 1.0,
+        CasingEnum.THIN: 1.025,
+    }
+
+    # Surface/wet fudge factors
+    SURFACE_FACTORS = {
+        SurfaceEnum.DRY: 1.0,
+        SurfaceEnum.SNOW: 0.5,
+        SurfaceEnum.WET: 0.9,
+        SurfaceEnum.MIXED: 0.95,
+    }
+
+    # Inner rim width to compatible tire width mapping
+    RIM_WIDTH_TABLE = [
+        {"min": 18, "max": 22, "compatible": 15},
+        {"min": 22, "max": 25, "compatible": 17},
+        {"min": 25, "max": 29, "compatible": 19},
+        {"min": 29, "max": 35, "compatible": 21},
+        {"min": 35, "max": 47, "compatible": 23},
+        {"min": 47, "max": 58, "compatible": 25},
+        {"min": 58, "max": 66, "compatible": 30},
+        {"min": 66, "max": 72, "compatible": 35},
+        {"min": 72, "max": 84, "compatible": 45},
+        {"min": 84, "max": 96, "compatible": 55},
+        {"min": 96, "max": 113, "compatible": 76},
+        {"min": 114, "max": 133, "compatible": 94},
+    ]
+
+    # Wheel diameter mapping (in mm)
+    WHEEL_DIAMETER_MAP = {
+        DiameterEnum.D_700C: 622,
+        DiameterEnum.D_650B: 571,
+        DiameterEnum.D_650C: 571,
+        DiameterEnum.D_26: 559,
+        DiameterEnum.D_27_5: 584,
+        DiameterEnum.D_29: 622,
+    }
+
     def __init__(self):
         self.front_tire = None
         self.rear_tire = None
@@ -17,264 +100,123 @@ class PressureCalculator:
         self.weight = None
         self.ride_type = None
 
-    def _compute_base_pressure(self, ride_style: RideStyleEnum) -> tuple[float, float]:
-        """
-        Compute base pressures
-        """
+    def _rim_width_lookup(self, tire_width: float) -> float:
+        """Get the compatible rim width based on tire width."""
+        for entry in self.RIM_WIDTH_TABLE:
+            if entry["min"] <= tire_width < entry["max"]:
+                return float(entry["compatible"])
+        return 21.0  # Default fallback
 
-        # Total system weight
-        total_weight = self.weight.rider + self.weight.bike
-
-        # The rear should only be slightly higher than front
-        if ride_style in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
-            front_weight_ratio = 0.485
-        elif ride_style == RideStyleEnum.GRAVEL:
-            front_weight_ratio = 0.485  # Similar balance for gravel
-        else:  # MTB variants
-            front_weight_ratio = 0.485  # Consistent across disciplines
-
-        front_weight = total_weight * front_weight_ratio
-        rear_weight = total_weight * (1 - front_weight_ratio)
-
-        base_factors = {
-            RideStyleEnum.ROAD: 1.76,
-            RideStyleEnum.CYCLOCROSS: 1.6,
-            RideStyleEnum.GRAVEL: 1.1,
-            RideStyleEnum.MTB_XC: 0.62,
-            RideStyleEnum.MTB_TRAIL: 0.55,
-            RideStyleEnum.MTB_ENDURO: 0.45,
-            RideStyleEnum.MTB_DOWNHILL: 0.35,
-            RideStyleEnum.FATBIKE: 0.25,
-        }
-
-        base_factor = base_factors.get(ride_style, 1.0)
-
-        front_base = front_weight * base_factor
-        rear_base = rear_weight * base_factor
-
-        return front_base, rear_base
-
-    def _compute_width_factor(self, ride_style: RideStyleEnum) -> tuple[float, float]:
-        def interpolate_width_factor(
-            width_mm: float, curve: list[tuple[float, float]]
-        ) -> float:
-            """Linearly interpolate a factor based on tire width and a (width, factor) curve."""
-            for i, (limit, factor) in enumerate(curve):
-                if width_mm <= limit:
-                    # If it's below or equal to the first point, just return it
-                    if i == 0:
-                        return factor
-                    # Get previous point
-                    prev_limit, prev_factor = curve[i - 1]
-                    # Linear interpolation ratio between the two points
-                    ratio = (width_mm - prev_limit) / (limit - prev_limit)
-                    return prev_factor + (factor - prev_factor) * ratio
-            # If wider than last defined point
-            return curve[-1][1]
-
-        def get_width_factor(width_mm: float, discipline: RideStyleEnum) -> float:
-            """tire width pressure adjustment formula"""
-
-            width_curves = {
-                RideStyleEnum.ROAD: [
-                    (23, 1.25),
-                    (25, 1.15),
-                    (28, 1.00),
-                    (32, 0.88),
-                    (35, 0.78),
-                    (float("inf"), 0.70),
-                ],
-                RideStyleEnum.CYCLOCROSS: [  # can reuse or tweak independently
-                    (23, 1.25),
-                    (25, 1.15),
-                    (28, 1.00),
-                    (32, 0.88),
-                    (35, 0.78),
-                    (float("inf"), 0.70),
-                ],
-                RideStyleEnum.GRAVEL: [
-                    (32, 1.10),
-                    (35, 1.00),
-                    (40, 0.90),
-                    (45, 0.82),
-                    (float("inf"), 0.75),
-                ],
-                RideStyleEnum.MTB_XC: [
-                    (58, 1.00),
-                    (64, 0.92),
-                    (70, 0.85),
-                    (float("inf"), 0.80),
-                ],
-            }
-
-            curve = width_curves.get(discipline, width_curves[RideStyleEnum.MTB_XC])
-            return interpolate_width_factor(width_mm, curve)
-
-        front_width_factor = get_width_factor(self.front_tire.width, ride_style)
-        rear_width_factor = get_width_factor(self.rear_tire.width, ride_style)
-
-        return front_width_factor, rear_width_factor
-
-    def _compute_casing_factor(
-        self, front_casing: str, rear_casing: str
-    ) -> tuple[float, float]:
-        """casing adjustments - more nuanced"""
-        casing_factors = {
-            CasingEnum.THIN: 0.92,  # Supple casings: lower pressure for comfort
-            CasingEnum.STANDARD: 1.00,  # Baseline
-            CasingEnum.REINFORCED: 1.08,  # Stiffer: needs more pressure
-            CasingEnum.DOWNHILL_CASING: 1.15,  # Very stiff: significant pressure increase
-        }
-
-        front_casing_factor = casing_factors.get(front_casing, 1.00)
-        rear_casing_factor = casing_factors.get(rear_casing, 1.00)
-
-        return front_casing_factor, rear_casing_factor
-
-    def _compute_surface_factor(
-        self, surface: SurfaceEnum, ride_style: RideStyleEnum
+    def _calculate_recommended_pressure(
+        self,
+        rider_weight_kg: float,
+        bike_weight_kg: float,
+        ride_style: RideStyleEnum,
+        rim_type: RimTypeEnum,
+        surface: SurfaceEnum,
+        tire_width_mm: float,
+        inner_rim_width_mm: float,
+        tire_casing: CasingEnum,
+        wheel_position: str,
+        wheel_diameter: float,
     ) -> float:
-        """surface adjustments - discipline specific (fine-tuned for test values)"""
+        """
+        Calculate recommended tire pressure using SRAM algorithm.
 
-        if ride_style in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
-            return 0.90 if surface == SurfaceEnum.WET else 1.00
-        elif ride_style == RideStyleEnum.GRAVEL:
-            surface_factors = {
-                SurfaceEnum.DRY: 1.00,
-                SurfaceEnum.WET: 0.90,
-                SurfaceEnum.MIXED: 0.95,
-            }  # Gravel wet: 26.9/29.9 = 0.90
-            return surface_factors.get(surface, 1.00)
-        else:  # MTB
-            surface_factors = {
-                SurfaceEnum.DRY: 1.00,
-                SurfaceEnum.WET: 0.90,
-                SurfaceEnum.MIXED: 0.95,
-            }  # MTB wet: 16.7/18.5 = 0.90
-            return surface_factors.get(surface, 1.00)
+        Formula: PSI = base * weight_factor * wheel_factor * fudge_factors
+        """
 
-    def _compute_rim_factor(
-        self, front_rim: RimTypeEnum, rear_rim: RimTypeEnum
-    ) -> tuple[float, float]:
-        """rim type considerations"""
-        rim_factors = {
-            RimTypeEnum.HOOKLESS: 0.95,  # hookless optimization
-            RimTypeEnum.HOOKS: 1.00,
-            RimTypeEnum.TUBULAR: 1.03,  # Tubulars can handle slightly higher pressure
-            RimTypeEnum.TUBES: 0.98,  # Tubes: slightly conservative
-        }
+        # 1. Get fudge factors
+        ride_factor = self.RIDE_STYLE_FACTORS.get(ride_style, 1.0)
+        wheel_factor = self.WHEEL_POSITION_FACTORS.get(wheel_position, 1.0)
+        casing_factor = self.CASING_FACTORS.get(tire_casing, 1.0)
+        surface_factor = self.SURFACE_FACTORS.get(surface, 1.0)
 
-        return rim_factors.get(front_rim, 1.00), rim_factors.get(rear_rim, 1.00)
+        if ride_style == RideStyleEnum.CYCLOCROSS:
+            rim_factor = self.RIM_TYPE_CX_FACTORS.get(rim_type, 1.0)
+        else:
+            rim_factor = self.RIM_TYPE_FACTORS.get(rim_type, 1.0)
 
-    def _compute_rim_width_factor(self) -> tuple[float, float]:
-        """Rim width influence (wider internal = lower pressure)"""
-
-        def get_rim_width_factor(internal_width_mm):
-            """Wider internal rim width allows lower pressure"""
-            if internal_width_mm <= 17:
-                return 1.05
-            elif internal_width_mm <= 21:
-                return 1.00
-            elif internal_width_mm <= 25:
-                return 0.97
-            elif internal_width_mm <= 30:
-                return 0.94
-            else:
-                return 0.92
-
-        front_rim_width = getattr(self.front_wheel, "rim_width", 21)
-        rear_rim_width = getattr(self.rear_wheel, "rim_width", 21)
-
-        return get_rim_width_factor(front_rim_width), get_rim_width_factor(
-            rear_rim_width
+        # 2. Calculate effective tire width
+        compatible_rim_width = self._rim_width_lookup(tire_width_mm)
+        effective_width = tire_width_mm + 0.4 * (
+            inner_rim_width_mm - compatible_rim_width
         )
+
+        # 3. Calculate geometric constant (proportional to tire volume)
+        outer_radius = wheel_diameter / 2.0 + effective_width / 2.0
+        inner_radius = effective_width / 2.0
+        c = 4.0 * math.pi**2 * outer_radius * inner_radius
+
+        # 4. Base pressure from regression model
+        base = (10**8.684670773) * (c ** -1.304556655)
+
+        # 5. Calculate weight factor
+        weight_sum = bike_weight_kg + rider_weight_kg
+        weight_factor = 1.0 + (2.2 * weight_sum - 180.0) * 0.0025
+
+        # 6. Combine everything
+        pressure = base * weight_factor * wheel_factor
+        pressure *= rim_factor * ride_factor * surface_factor * casing_factor
+
+        # 7. The result is already in PSI scale
+        pressure_psi = pressure
+
+        return pressure_psi
 
     def calculate(self) -> TirePressure:
-        """
-        Calculate recommended front and rear tire pressures.
-        """
+        """Calculate front and rear tire pressures."""
 
-        # get config
-        ride_style = getattr(self.ride_type, "style", RideStyleEnum.ROAD).upper()
-        front_casing = getattr(self.front_tire, "casing", CasingEnum.STANDARD).upper()
-        rear_casing = getattr(self.rear_tire, "casing", CasingEnum.STANDARD).upper()
-        surface = getattr(self.ride_type, "surface", SurfaceEnum.DRY).upper()
-        front_rim = getattr(self.front_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
-        rear_rim = getattr(self.rear_wheel, "rim_type", RimTypeEnum.HOOKLESS).upper()
+        # Extract parameters
+        ride_style = self.ride_type.style
+        surface = self.ride_type.surface
 
-        # BASE
-        front_base, rear_base = self._compute_base_pressure(ride_style)
+        rider_weight = self.weight.rider
+        bike_weight = self.weight.bike
 
-        # WIDTH FACTOR
-        front_width_factor, rear_width_factor = self._compute_width_factor(ride_style)
+        front_casing = self.front_tire.casing
+        rear_casing = self.rear_tire.casing
 
-        # CASING FACTOR
-        front_casing_factor, rear_casing_factor = self._compute_casing_factor(
-            front_casing, rear_casing
+        front_rim_type = self.front_wheel.rim_type
+        rear_rim_type = self.rear_wheel.rim_type
+
+        front_width_mm = self.front_tire.get_width_mm()
+        rear_width_mm = self.rear_tire.get_width_mm()
+
+        front_rim_width = self.front_wheel.rim_width
+        rear_rim_width = self.rear_wheel.rim_width
+
+        # Get wheel diameter
+        front_diameter_mm = self.WHEEL_DIAMETER_MAP.get(self.front_wheel.diameter, 622)
+        rear_diameter_mm = self.WHEEL_DIAMETER_MAP.get(self.rear_wheel.diameter, 622)
+
+        # Calculate front pressure
+        front_pressure = self._calculate_recommended_pressure(
+            rider_weight_kg=rider_weight,
+            bike_weight_kg=bike_weight,
+            ride_style=ride_style,
+            rim_type=front_rim_type,
+            surface=surface,
+            tire_width_mm=front_width_mm,
+            inner_rim_width_mm=front_rim_width,
+            tire_casing=front_casing,
+            wheel_position="FRONT",
+            wheel_diameter=front_diameter_mm,
         )
 
-        # SURFACE FACTOR
-        surface_factor = self._compute_surface_factor(surface, ride_style)
-
-        # RIM TYPE FACTOR
-        front_rim_factor, rear_rim_factor = self._compute_rim_factor(
-            front_rim, rear_rim
+        # Calculate rear pressure
+        rear_pressure = self._calculate_recommended_pressure(
+            rider_weight_kg=rider_weight,
+            bike_weight_kg=bike_weight,
+            ride_style=ride_style,
+            rim_type=rear_rim_type,
+            surface=surface,
+            tire_width_mm=rear_width_mm,
+            inner_rim_width_mm=rear_rim_width,
+            tire_casing=rear_casing,
+            wheel_position="REAR",
+            wheel_diameter=rear_diameter_mm,
         )
-
-        # RIM WIDTH FACTOR
-        front_rim_width_factor, rear_rim_width_factor = self._compute_rim_width_factor()
-
-        # Calculate final pressures with methodology
-        front_pressure = (
-            front_base
-            * front_width_factor
-            * front_casing_factor
-            * surface_factor
-            * front_rim_factor
-            * front_rim_width_factor
-        )
-
-        rear_pressure = (
-            rear_base
-            * rear_width_factor
-            * rear_casing_factor
-            * surface_factor
-            * rear_rim_factor
-            * rear_rim_width_factor
-        )
-
-        # Apply a discipline-specific rear adjustment to match expected values
-        if ride_style in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS]:
-            # Road: Expected ratio is 54.3/51.1 = 1.063
-            rear_pressure = front_pressure * 1.063
-        elif ride_style == RideStyleEnum.GRAVEL:
-            # Gravel: Expected ratio is 31.8/29.9 = 1.064
-            rear_pressure = front_pressure * 1.064
-        else:  # MTB
-            # MTB: Expected ratio is 19.7/18.5 = 1.065
-            rear_pressure = front_pressure * 1.065
-
-        # hookless safety limits
-        if front_rim == RimTypeEnum.HOOKLESS:
-            front_pressure = min(front_pressure, 73.0)  # 5 bar limit
-        if rear_rim == RimTypeEnum.HOOKLESS:
-            rear_pressure = min(rear_pressure, 73.0)
-
-        # minimum pressure recommendations by discipline (lowered to avoid clamping)
-        min_pressures = {
-            RideStyleEnum.ROAD: 20.0,
-            RideStyleEnum.CYCLOCROSS: 18.0,
-            RideStyleEnum.GRAVEL: 15.0,
-            RideStyleEnum.MTB_XC: 12.0,
-            RideStyleEnum.MTB_TRAIL: 10.0,
-            RideStyleEnum.MTB_ENDURO: 8.0,
-            RideStyleEnum.MTB_DOWNHILL: 6.0,
-            RideStyleEnum.FATBIKE: 3.0,
-        }
-
-        min_pressure = min_pressures.get(ride_style, 25.0)
-        front_pressure = max(front_pressure, min_pressure)
-        rear_pressure = max(rear_pressure, min_pressure)
 
         return TirePressure(
             front_wheel=round(front_pressure, 1),
@@ -306,17 +248,4 @@ class PressureCalculatorBuilder:
         return self
 
     def build(self) -> PressureCalculator:
-        # Validate all required components are set
-        if not all(
-            [
-                self.calculator.front_tire,
-                self.calculator.rear_tire,
-                self.calculator.front_wheel,
-                self.calculator.rear_wheel,
-                self.calculator.weight,
-                self.calculator.ride_type,
-            ]
-        ):
-            raise ValueError("All components must be set before building")
-
         return self.calculator
