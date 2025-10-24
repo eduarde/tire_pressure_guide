@@ -103,13 +103,13 @@ def build_mtbxc_default_setup(surface_type: SurfaceEnum):
     front_tire = TireType(
         position=PositionEnum.FRONT,
         casing=CasingEnum.STANDARD,
-        width=40,
+        width=2.3,
         unit=WidthUnitEnum.IN,
     )
     rear_tire = TireType(
         position=PositionEnum.REAR,
         casing=CasingEnum.STANDARD,
-        width=40,
+        width=2.3,
         unit=WidthUnitEnum.IN,
     )
     front_wheel = Wheel(
@@ -123,6 +123,53 @@ def build_mtbxc_default_setup(surface_type: SurfaceEnum):
         diameter=DiameterEnum.D_29,
         rim_type=RimTypeEnum.HOOKLESS,
         rim_width=30,
+    )
+
+    return __build_setup(
+        ride, weight, (front_tire, rear_tire), (front_wheel, rear_wheel)
+    )
+
+
+def build_custom_setup(
+    ride_type: RideStyleEnum,
+    surface_type: SurfaceEnum,
+    rider_w: float,
+    bike_w: float,
+    tire_w: float,
+    casing: CasingEnum,
+    w_diameter: DiameterEnum,
+    rim_type: RimTypeEnum,
+    rim_width: float,
+):
+    tire_w_unit = (
+        WidthUnitEnum.MM
+        if ride_type
+        in [RideStyleEnum.ROAD, RideStyleEnum.CYCLOCROSS, RideStyleEnum.GRAVEL]
+        else WidthUnitEnum.IN
+    )
+
+    ride = RideType(style=ride_type, surface=surface_type)
+    weight = Weight(rider=rider_w, bike=bike_w)
+    front_tire = TireType(
+        position=PositionEnum.FRONT, casing=casing, width=tire_w, unit=tire_w_unit
+    )
+    rear_tire = TireType(
+        position=PositionEnum.REAR,
+        casing=casing,
+        width=tire_w,
+        unit=tire_w_unit,
+    )
+    front_wheel = Wheel(
+        position=PositionEnum.FRONT,
+        diameter=w_diameter,
+        rim_type=rim_type,
+        rim_width=rim_width,
+    )
+    rear_wheel = Wheel(
+        position=PositionEnum.REAR,
+        diameter=w_diameter,
+        rim_type=rim_type,
+        rim_width=rim_width,
     )
 
     return __build_setup(

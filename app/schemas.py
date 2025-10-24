@@ -32,12 +32,14 @@ class SurfaceEnum(StrEnum):
     DRY = "DRY"
     WET = "WET"
     MIXED = "MIXED"
+    SNOW = "SNOW"
 
 
 class CasingEnum(StrEnum):
     THIN = "THIN"
     STANDARD = "STANDARD"
     REINFORCED = "REINFORCED"
+    DOUBLE = "DOUBLE"  # Double ply / downhill
     DOWNHILL_CASING = "DOWNHILL_CASING"
 
 
@@ -54,6 +56,7 @@ class RimTypeEnum(StrEnum):
     TUBES = "TUBES"
     TUBULAR = "TUBULAR"
     HOOKS = "HOOKS"
+    HOOKED = "HOOKED"  # Alias for HOOKS
     HOOKLESS = "HOOKLESS"
 
 
@@ -76,8 +79,17 @@ class Weight(BaseModel):
 class TireType(BaseModel):
     position: PositionEnum
     casing: CasingEnum
-    width: int
+    width: float
     unit: WidthUnitEnum
+
+    def get_width_mm(self) -> float:
+        """Convert tire width to millimeters"""
+        if self.unit == WidthUnitEnum.IN:
+            return self.width * 25.4  # Convert inches to mm
+        else:  # Already in MM
+            return self.width
+
+
 
 
 class Wheel(BaseModel):
