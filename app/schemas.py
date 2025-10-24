@@ -64,12 +64,6 @@ class RimTypeEnum(StrEnum):
     HOOKLESS = "HOOKLESS"
 
 
-class TirePressure(BaseModel):
-    front_wheel: float
-    rear_wheel: float
-    unit: PressureUnitEnum
-
-
 # --- Component Models ---
 
 
@@ -113,3 +107,20 @@ class Bike(BaseModel):
     rear_tire: Tire
     rear_wheel: Wheel
     weight: Weight
+
+
+# --- Response Models ---
+
+
+class TirePressure(BaseModel):
+    front_wheel: float
+    rear_wheel: float
+    unit: PressureUnitEnum
+
+
+# --- Request Models ---
+
+
+class TirePresssureRequest(BaseModel):
+    bike: Bike
+    rider_weight: float

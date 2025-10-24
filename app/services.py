@@ -10,6 +10,7 @@ from .schemas import (
     Weight,
     Wheel,
     TirePressure,
+    Bike,
 )
 
 
@@ -251,3 +252,21 @@ class PressureCalculatorBuilder:
 
     def build(self) -> PressureCalculator:
         return self.calculator
+
+
+def build_and_compute(
+    bike: Bike, surface: SurfaceEnum, rider_weight: Weight
+) -> PressureCalculator:
+    builder = PressureCalculatorBuilder()
+    return (
+        (
+            builder.set_discipline(bike.discipline)
+            .set_surface(surface)
+            .set_bike_weight(bike.weight.value)
+            .set_rider_weight(rider_weight.value)
+            .set_tires(bike.front_tire, bike.rear_tire)
+            .set_wheels(bike.front_wheel, bike.rear_wheel)
+        )
+        .build()
+        .calculate()
+    )
