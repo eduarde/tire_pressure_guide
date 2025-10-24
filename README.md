@@ -1,4 +1,4 @@
-#  Tire Pressure Recommndation (WIP)
+#  Tire Pressure Recommndation 
 
 A comprehensive bicycle tire pressure recommendation system that provides optimal pressure calculations based on rider weight, bike specifications, tire dimensions, and riding conditions.
 
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 ### Running the API Server
 
 ```bash
-python -m app.main
+uvicorn app.main:app --port 8000 --reload
 ```
 
 The API will be available at `http://localhost:8000`
@@ -53,7 +53,7 @@ Interactive API documentation is available at:
 
 ### Example Request
 
-```
+```bash
 curl -X 'POST' \
   'http://127.0.0.1:8085/compute' \
   -H 'accept: application/json' \

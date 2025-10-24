@@ -85,8 +85,6 @@ WHEEL_GRAVEL_HOOKLESS_700C_REAR = Wheel(
 )
 
 
-
-
 WHEEL_MTB_XC_HOOKLESS_29_FRONT = Wheel(
     position=PositionEnum.FRONT,
     diameter=DiameterEnum.D_29,

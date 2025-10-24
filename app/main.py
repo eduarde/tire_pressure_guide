@@ -9,7 +9,10 @@ app = FastAPI()
 def root():
     return {"status": "healthy"}
 
+
 @app.post("/compute", response_model=TirePressure)
 def compute_pressure(payload: TirePressureRequest):
-    recommended_pressure = build_and_compute(payload.bike, payload.surface, payload.rider_weight)
+    recommended_pressure = build_and_compute(
+        payload.bike, payload.surface, payload.rider_weight
+    )
     return recommended_pressure
