@@ -5,9 +5,18 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
   options: { label: string; value: string }[];
   helper?: string;
   unit?: string;
+  placeholder?: string;
 }
 
-export function SelectField({ label, options, helper, unit, className, ...props }: SelectFieldProps) {
+export function SelectField({
+  label,
+  options,
+  helper,
+  unit,
+  placeholder,
+  className,
+  ...props
+}: SelectFieldProps) {
   return (
     <label className="block text-xs font-medium text-neutral-600">
       <span>{label}</span>
@@ -16,10 +25,15 @@ export function SelectField({ label, options, helper, unit, className, ...props 
           {...props}
           className={clsx(
             "flex-1 appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm",
-            "focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10",
+            "focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600/15",
             className
           )}
         >
+          {placeholder ? (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          ) : null}
           {options.map((option) => (
             <option key={option.value} value={option.value} className="bg-white text-neutral-900">
               {option.label}
