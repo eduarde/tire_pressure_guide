@@ -17,7 +17,7 @@ export function TogglePill({ label, description, icon, active, onClick }: Toggle
         "group flex h-20 flex-1 min-w-[120px] flex-col justify-center rounded-2xl border px-4 transition",
         "border-white/10 bg-white/5 text-left",
         active
-          ? "border-emerald-400/70 bg-emerald-500/10 text-white shadow-panel"
+          ? "border-purple-300/70 bg-purple-500/10 text-white shadow-panel"
           : "hover:border-white/30 hover:bg-white/10"
       )}
     >

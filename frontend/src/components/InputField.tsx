@@ -15,7 +15,7 @@ export function InputField({ label, helper, unit, className, ...props }: InputFi
           {...props}
           className={clsx(
             "flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm",
-            "placeholder:text-neutral-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20",
+            "placeholder:text-neutral-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
             className
           )}
         />

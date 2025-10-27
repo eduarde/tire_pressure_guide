@@ -11,7 +11,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
   return (
     <div
       className={clsx(
-        "flex flex-wrap items-center gap-1 rounded-lg border border-neutral-300 bg-white p-1 text-xs font-medium text-neutral-600",
+        "flex flex-wrap items-center gap-1 rounded-lg border border-purple-100 bg-white p-1 text-xs font-medium text-neutral-600",
         className
       )}
     >
@@ -25,8 +25,8 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             className={clsx(
               "min-w-[48px] rounded-md px-3 py-1.5 transition",
               active
-                ? "bg-emerald-500 text-white shadow-sm"
-                : "text-neutral-600 hover:bg-emerald-50 hover:text-emerald-700"
+                ? "bg-purple-500 text-white shadow-sm"
+                : "text-neutral-600 hover:bg-purple-50 hover:text-purple-700"
             )}
           >
             {option.label}

@@ -286,28 +286,29 @@ export default function App() {
   const readyToCalculate = progressPercent === 100;
 
   return (
-    <div className="min-h-screen bg-emerald-50 text-neutral-900">
-      <header className="border-b border-emerald-200/70 bg-white/80 backdrop-blur">
+    <div className="min-h-screen bg-violet-50 text-neutral-900">
+      <header className="border-b border-purple-100/70 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-500">Tire Pressure Studio</p>
+          <span className="inline-flex items-center rounded-full bg-purple-100 px-4 py-1 text-sm font-semibold text-purple-700">
+            Tire Pressure Studio
+          </span>
           <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
-            How modern riders dial in confident tire pressure, every single time.
+            Dial in confident tire pressure for every ride.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Map your setup from weight to casing in a few guided steps, then apply data-backed recommendations tuned to your
-            terrain, rims, and riding discipline.
+            Guide your setup from weight to casing in a few quick steps, then review tailored recommendations aligned to your terrain, rims, and riding discipline.
           </p>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
-          <section className="rounded-3xl border border-emerald-200/70 bg-white/80 p-8 shadow-xl shadow-emerald-100/80 backdrop-blur">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+          <section className="rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
             <div className="space-y-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-neutral-600">Setup progress</p>
-                  <p className="text-sm text-neutral-500">{progressPercent}% complete</p>
+                  <p className="text-sm font-semibold text-purple-600">Setup progress</p>
+                  <p className="text-sm text-purple-500">{progressPercent}% complete</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <SegmentedControl
@@ -336,9 +337,9 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-100">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-purple-100">
                   <div
-                    className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                    className="h-full rounded-full bg-purple-500 transition-[width] duration-300"
                     style={{ width: `${progressPercent}%` }}
                     aria-hidden
                   />
@@ -350,8 +351,8 @@ export default function App() {
                         className={clsx(
                           "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold",
                           step.complete
-                            ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-emerald-100 bg-white text-neutral-400"
+                            ? "border-purple-500 bg-purple-500 text-white"
+                            : "border-purple-100 bg-white text-neutral-400"
                         )}
                       >
                         {index + 1}
@@ -416,10 +417,10 @@ export default function App() {
                           setShowResults(false);
                         }}
                         className={clsx(
-                          "rounded-lg border border-emerald-100 bg-white px-4 py-3 text-sm font-semibold text-left transition",
+                          "rounded-lg border border-purple-100 bg-white px-4 py-3 text-sm font-semibold text-left transition",
                           discipline === option.value
-                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 shadow-sm"
-                            : "text-neutral-600 hover:border-emerald-200 hover:text-emerald-700"
+                            ? "border-purple-500 bg-purple-500/10 text-purple-700 shadow-sm"
+                            : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
                         )}
                       >
                         {option.label}
@@ -440,10 +441,10 @@ export default function App() {
                           setShowResults(false);
                         }}
                         className={clsx(
-                          "rounded-full border border-emerald-100 bg-white px-4 py-2 text-sm font-medium transition",
+                          "rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
                           surface === option.value
-                            ? "border-emerald-500 bg-emerald-500 text-white shadow-sm"
-                            : "text-neutral-600 hover:border-emerald-200 hover:text-emerald-700"
+                            ? "border-purple-500 bg-purple-500 text-white shadow-sm"
+                            : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
                         )}
                       >
                         {option.label}
@@ -562,16 +563,16 @@ export default function App() {
           </section>
 
           <aside className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-neutral-900/40 bg-neutral-900 p-8 text-white shadow-2xl shadow-neutral-900/60">
+            <div className="rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
               <div className="flex items-start justify-between gap-6">
                 <div>
-                  <p className="text-sm font-medium text-emerald-300/90">Recommended setup</p>
+                  <p className="text-sm font-medium text-purple-200/90">Recommended setup</p>
                   <h2 className="mt-2 text-3xl font-semibold">Baseline pressures</h2>
                   <p className="mt-4 text-sm text-white/60">
                     Use these as a starting point, then make one-click tweaks once you feel the terrain and grip on the day.
                   </p>
                 </div>
-                <BoltIcon className="hidden h-12 w-12 shrink-0 text-emerald-400/40 lg:block" aria-hidden />
+                <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/40 lg:block" aria-hidden />
               </div>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/40">
@@ -587,19 +588,19 @@ export default function App() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-emerald-200/70 bg-white/80 p-6 shadow-lg shadow-emerald-100/70">
+            <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
               <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
               <ul className="mt-4 space-y-3 text-sm text-neutral-600">
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Balance grip and speed by letting the front run slightly lower than the rear.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Recheck pressure before each ride—temperature swings can move readings by 1-2 {unitLabel}.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Adjust ±1 {unitLabel} to tune comfort once you sample the day’s terrain.
                 </li>
               </ul>
@@ -611,10 +612,10 @@ export default function App() {
                 form="setup-form"
                 disabled={!readyToCalculate}
                 className={clsx(
-                  "flex-1 rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition",
+                  "flex-1 rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition sm:min-w-[220px]",
                   readyToCalculate
-                    ? "bg-emerald-500 text-neutral-900 shadow-lg shadow-emerald-400/40 hover:bg-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200"
-                    : "cursor-not-allowed bg-emerald-100 text-emerald-400"
+                    ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                    : "cursor-not-allowed bg-purple-100 text-purple-400"
                 )}
               >
                 CALCULATE
@@ -622,7 +623,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="inline-flex items-center justify-center rounded-full border border-emerald-300 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-600 transition hover:border-emerald-400 hover:text-emerald-700"
+                className="inline-flex items-center justify-center rounded-full border border-purple-200 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
               >
                 RESET
               </button>
