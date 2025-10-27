@@ -251,47 +251,49 @@ export default function App() {
   const progressPercent = Math.round((completedSteps / progressSteps.length) * 100);
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900">
-      <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-10">
-        <header className="space-y-5 text-center sm:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-600">Tire pressure guide</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Modern tire pressure calculator</h1>
-          <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Dial in confident ride-ready pressures for any bike in just a few taps. Lightweight controls keep everything inline for quick adjustments wherever you roll.
-          </p>
+    <div className="min-h-screen bg-slate-100 text-neutral-900">
+      <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-12 px-4 py-16 sm:px-6 lg:px-10">
+        <header className="rounded-3xl border border-neutral-200 bg-white px-6 py-12 shadow-sm sm:px-10">
+          <div className="space-y-5 text-center sm:text-left">
+            <p className="text-sm font-medium text-neutral-500">Tire pressure guide</p>
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Find your perfect tire pressure</h1>
+            <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+              Set up your bike with confidence using a streamlined, material-inspired layout that keeps every decision clear and approachable on any device.
+            </p>
+          </div>
         </header>
 
-        <section className="rounded-4xl border border-neutral-900/10 bg-neutral-900 p-8 text-white shadow-2xl shadow-neutral-900/40 sm:p-10">
+        <section className="rounded-3xl border border-neutral-900/20 bg-neutral-900 px-6 py-10 text-white shadow-xl shadow-neutral-900/30 sm:px-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70">Recommended</p>
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-white/70">Recommended setup</p>
               <h2 className="text-2xl font-semibold sm:text-3xl">Ride-ready pressures</h2>
-              <p className="max-w-xl text-xs leading-relaxed text-white/70 sm:text-sm">
-                Tune by feel after the first kilometres. Ambient conditions and casing wear may nudge your final setting a touch higher or lower.
+              <p className="max-w-xl text-sm leading-relaxed text-white/70">
+                Use these values as a confident baseline, then fine-tune a touch for terrain, weather, and personal feel.
               </p>
             </div>
-            <BoltIcon className="hidden h-12 w-12 shrink-0 text-emerald-300 sm:block" aria-hidden />
+            <BoltIcon className="hidden h-12 w-12 shrink-0 text-white/30 sm:block" aria-hidden />
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-6 text-center shadow-lg shadow-black/20">
-              <p className="text-[11px] uppercase tracking-[0.32em] text-white/60">Front</p>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/20">
+              <p className="text-sm font-medium text-white/70">Front</p>
               <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-200">{unitLabel}</p>
+              <p className="text-sm font-medium text-white/60">{unitLabel}</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-6 text-center shadow-lg shadow-black/20">
-              <p className="text-[11px] uppercase tracking-[0.32em] text-white/60">Rear</p>
+            <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/20">
+              <p className="text-sm font-medium text-white/70">Rear</p>
               <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-200">{unitLabel}</p>
+              <p className="text-sm font-medium text-white/60">{unitLabel}</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-4xl border border-neutral-200/70 bg-white/95 p-6 shadow-xl shadow-neutral-900/5 sm:p-8">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <section className="rounded-3xl border border-neutral-200 bg-white px-6 py-8 shadow-xl sm:px-8">
+          <div className="space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">Setup progress</p>
+                <p className="text-sm font-semibold text-neutral-600">Setup progress</p>
                 <p className="text-sm text-neutral-500">{progressPercent}% complete</p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -317,39 +319,43 @@ export default function App() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                  className="h-full rounded-full bg-neutral-900 transition-[width] duration-300"
                   style={{ width: `${progressPercent}%` }}
                   aria-hidden
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-500">
-                {progressSteps.map((step) => (
-                  <span
-                    key={step.label}
-                    className={clsx(
-                      "rounded-full px-3 py-1",
-                      step.complete ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-400"
-                    )}
-                  >
-                    {step.label}
-                  </span>
+              <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-5">
+                {progressSteps.map((step, index) => (
+                  <div key={step.label} className="flex items-center gap-2">
+                    <span
+                      className={clsx(
+                        "flex h-8 w-8 items-center justify-center rounded-full border text-sm font-medium",
+                        step.complete
+                          ? "border-neutral-900 bg-neutral-900 text-white"
+                          : "border-neutral-300 bg-white text-neutral-500"
+                      )}
+                    >
+                      {index + 1}
+                    </span>
+                    <span className="font-medium">{step.label}</span>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
           <form
-            className="mt-8 space-y-8"
+            className="mt-10 space-y-8"
             onSubmit={(event) => {
               event.preventDefault();
               setShowResults(true);
             }}
           >
             <div className="space-y-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Weight</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Weight</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <InputField
                   label="Rider weight"
@@ -379,8 +385,8 @@ export default function App() {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Discipline</p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Discipline</p>
+              <div className="mt-4 flex flex-wrap gap-2">
                 {disciplineOptions.map((option) => (
                   <button
                     key={option.value}
@@ -390,10 +396,10 @@ export default function App() {
                       setShowResults(false);
                     }}
                     className={clsx(
-                      "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition",
+                      "rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm transition",
                       discipline === option.value
-                        ? "border-neutral-900 bg-neutral-900 text-white"
-                        : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:text-neutral-900"
+                        ? "border-neutral-900 bg-neutral-900 text-white shadow"
+                        : "hover:border-neutral-400 hover:text-neutral-900"
                     )}
                   >
                     {option.label}
@@ -403,8 +409,8 @@ export default function App() {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Surface</p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Surface</p>
+              <div className="mt-4 flex flex-wrap gap-2">
                 {surfaceOptions.map((option) => (
                   <button
                     key={option.value}
@@ -414,10 +420,10 @@ export default function App() {
                       setShowResults(false);
                     }}
                     className={clsx(
-                      "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition",
+                      "rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm transition",
                       surface === option.value
-                        ? "border-neutral-900 bg-neutral-900 text-white"
-                        : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:text-neutral-900"
+                        ? "border-neutral-900 bg-neutral-900 text-white shadow"
+                        : "hover:border-neutral-400 hover:text-neutral-900"
                     )}
                   >
                     {option.label}
@@ -426,9 +432,9 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Front rims</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Front rims</p>
                 <SelectField
                   label="Front rim type"
                   value={frontRimType}
@@ -452,7 +458,7 @@ export default function App() {
                 />
               </div>
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Rear rims</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Rear rims</p>
                 <SelectField
                   label="Rear rim type"
                   value={rearRimType}
@@ -477,9 +483,9 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Front tire</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Front tire</p>
                 <InputField
                   label="Width"
                   type="number"
@@ -503,7 +509,7 @@ export default function App() {
                 />
               </div>
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Rear tire</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Rear tire</p>
                 <InputField
                   label="Width"
                   type="number"
@@ -531,7 +537,7 @@ export default function App() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white shadow-lg shadow-neutral-900/20 transition hover:bg-neutral-800"
+                className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
               >
                 Calculate
               </button>
