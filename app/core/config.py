@@ -1,33 +1,48 @@
 import os
-from typing import List
+from typing import List, Union
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 
-def get_cors_origins() -> List[str]:
-    """Get allowed CORS origins from environment variable or use defaults."""
+def get_cors_origins() -> Union[List[str], str]:
+    """Get allowed CORS origins from environment variable or use defaults.
+    
+    Returns either a list of specific origins or "*" for development.
+    In production, always use specific origins for security.
+    """
+    # Check if we're in production mode
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    
+    # Get origins from environment variable
     origins_str = os.getenv("ALLOWED_ORIGINS", "")
     
     if origins_str:
-        # Split by comma and strip whitespace
+        # If specific origins are set, use them (comma-separated)
         return [origin.strip() for origin in origins_str.split(",") if origin.strip()]
     
-    # Default origins for local development
-    return [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        # If you need to allow other network IPs, set ALLOWED_ORIGINS in your environment.
-        # The following are safe defaults for local development only.
-    ]
+    # In production, you MUST set ALLOWED_ORIGINS explicitly
+    if environment == "production":
+        raise ValueError(
+            "ALLOWED_ORIGINS must be explicitly set in production. "
+            "Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com"
+        )
+    
+    # Development mode: allow all origins (*)
+    # This allows any localhost/127.0.0.1 port without hardcoding
+    return "*"
+
+
+def should_allow_credentials() -> bool:
+    """Whether to allow credentials in CORS.
+    
+    Note: When allow_origins="*", credentials must be False.
+    """
+    origins = get_cors_origins()
+    return origins != "*"
 
 
 # Configuration
 ALLOWED_ORIGINS = get_cors_origins()
+ALLOW_CREDENTIALS = should_allow_credentials()
