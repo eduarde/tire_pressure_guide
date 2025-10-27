@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
 import { InputField, SelectField, SegmentedControl } from "./components";
 import { BoltIcon } from "@heroicons/react/24/outline";
@@ -98,6 +99,7 @@ export default function App() {
   const [apiResult, setApiResult] = useState<ApiPressureResponse | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const pressures = useMemo(() => {
     if (!apiResult) return null;
@@ -128,6 +130,7 @@ export default function App() {
     setMassUnit("kg");
     setPressureUnit("PSI");
     setIsCalculating(false);
+    setCurrentStep(0);
     clearResults();
   };
 
@@ -217,24 +220,258 @@ export default function App() {
     }
   };
 
-  const weightComplete = Boolean(parseFloat(riderWeight)) && Boolean(parseFloat(bikeWeight));
   const disciplineComplete = Boolean(discipline);
   const surfaceComplete = Boolean(surface);
+  const weightComplete = Boolean(parseFloat(riderWeight)) && Boolean(parseFloat(bikeWeight));
   const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth));
   const tireComplete = Boolean(parseFloat(tireWidth)) && Boolean(tireCasing);
 
-  const progressSteps = [
-    { label: "Weight", complete: weightComplete },
-    { label: "Discipline", complete: disciplineComplete },
-    { label: "Surface", complete: surfaceComplete },
-    { label: "Rims", complete: rimsComplete },
-    { label: "Tire", complete: tireComplete }
+  type StepConfig = {
+    key: string;
+    label: string;
+    complete: boolean;
+    content: ReactNode;
+  };
+
+  const stepConfigs: StepConfig[] = [
+    {
+      key: "discipline",
+      label: "Discipline",
+      complete: disciplineComplete,
+      content: (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {disciplineOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setDiscipline(option.value);
+                clearResults();
+              }}
+              className={clsx(
+                "rounded-lg border border-purple-100 bg-white px-4 py-3 text-left text-sm font-semibold transition",
+                discipline === option.value
+                  ? "border-purple-500 bg-purple-500/10 text-purple-700 shadow-sm"
+                  : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      key: "surface",
+      label: "Surface",
+      complete: surfaceComplete,
+      content: (
+        <div className="flex flex-wrap gap-2">
+          {surfaceOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setSurface(option.value);
+                clearResults();
+              }}
+              className={clsx(
+                "rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
+                surface === option.value
+                  ? "border-purple-500 bg-purple-500 text-white shadow-sm"
+                  : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      key: "weight",
+      label: "Weight",
+      complete: weightComplete,
+      content: (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <InputField
+            label="Rider weight"
+            type="number"
+            inputMode="decimal"
+            value={riderWeight}
+            min={0}
+            onChange={(event) => {
+              setRiderWeight(event.target.value);
+              clearResults();
+            }}
+            unit={massUnit}
+          />
+          <InputField
+            label="Bike weight"
+            type="number"
+            inputMode="decimal"
+            value={bikeWeight}
+            min={0}
+            onChange={(event) => {
+              setBikeWeight(event.target.value);
+              clearResults();
+            }}
+            unit={massUnit}
+          />
+        </div>
+      )
+    },
+    {
+      key: "rims",
+      label: "Rims",
+      complete: rimsComplete,
+      content: (
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
+            <SelectField
+              label="Rim type"
+              value={rimType}
+              placeholder="Select rim type"
+              onChange={(event) => {
+                setRimType(event.target.value as RimType | "");
+                clearResults();
+              }}
+              options={rimTypeOptions}
+            />
+            <InputField
+              label="Rim width"
+              type="number"
+              inputMode="decimal"
+              value={rimWidth}
+              min={0}
+              onChange={(event) => {
+                setRimWidth(event.target.value);
+                clearResults();
+              }}
+              unit="mm"
+            />
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+            <SelectField
+              label="Rim type"
+              value={rimType}
+              placeholder="Select rim type"
+              helper="Mirrors front selection"
+              onChange={(event) => {
+                setRimType(event.target.value as RimType | "");
+                clearResults();
+              }}
+              options={rimTypeOptions}
+            />
+            <InputField
+              label="Rim width"
+              type="number"
+              inputMode="decimal"
+              value={rimWidth}
+              min={0}
+              helper="Synced with front"
+              onChange={(event) => {
+                setRimWidth(event.target.value);
+                clearResults();
+              }}
+              unit="mm"
+            />
+          </div>
+        </div>
+      )
+    },
+    {
+      key: "tires",
+      label: "Tires",
+      complete: tireComplete,
+      content: (
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
+            <InputField
+              label="Width"
+              type="number"
+              inputMode="decimal"
+              value={tireWidth}
+              min={0}
+              onChange={(event) => {
+                setTireWidth(event.target.value);
+                clearResults();
+              }}
+              unit="mm"
+            />
+            <SelectField
+              label="Casing"
+              value={tireCasing}
+              placeholder="Select casing"
+              onChange={(event) => {
+                setTireCasing(event.target.value as TireCasing | "");
+                clearResults();
+              }}
+              options={casingOptions}
+            />
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+            <InputField
+              label="Width"
+              type="number"
+              inputMode="decimal"
+              value={tireWidth}
+              min={0}
+              helper="Synced with front"
+              onChange={(event) => {
+                setTireWidth(event.target.value);
+                clearResults();
+              }}
+              unit="mm"
+            />
+            <SelectField
+              label="Casing"
+              value={tireCasing}
+              placeholder="Select casing"
+              helper="Mirrors front selection"
+              onChange={(event) => {
+                setTireCasing(event.target.value as TireCasing | "");
+                clearResults();
+              }}
+              options={casingOptions}
+            />
+          </div>
+        </div>
+      )
+    }
   ];
 
+  const progressSteps = stepConfigs.map(({ label, complete }) => ({
+    label,
+    complete
+  }));
+
+  const activeStep = stepConfigs[currentStep];
   const completedSteps = progressSteps.filter((step) => step.complete).length;
   const progressPercent = Math.round((completedSteps / progressSteps.length) * 100);
   const readyToCalculate = progressPercent === 100;
   const canSubmit = readyToCalculate && !isCalculating;
+  const maxStepIndex = stepConfigs.length - 1;
+  const canGoBack = currentStep > 0;
+  const canGoNext = currentStep < maxStepIndex && stepConfigs[currentStep].complete;
+  const nextStepLabel = stepConfigs[currentStep + 1]?.label;
+  const canCalculate = canSubmit && currentStep === maxStepIndex;
+
+  const handleNext = () => {
+    if (currentStep < maxStepIndex && stepConfigs[currentStep].complete) {
+      setCurrentStep((previous) => Math.min(previous + 1, maxStepIndex));
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep((previous) => Math.max(previous - 1, 0));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-violet-50 text-neutral-900">
@@ -253,9 +490,10 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
-          <section className="rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
-            <div className="space-y-8">
+        <div className="grid gap-12 lg:grid-cols-[3fr_2fr]">
+          <div className="space-y-6">
+            <section className="flex h-[480px] flex-col rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
+              <div className="flex-1 space-y-8 overflow-y-auto">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-purple-600">Setup progress</p>
@@ -314,221 +552,87 @@ export default function App() {
               </div>
 
               <form id="setup-form" className="space-y-10" onSubmit={handleSubmit}>
-                <section className="space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Weight</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <InputField
-                      label="Rider weight"
-                      type="number"
-                      inputMode="decimal"
-                      value={riderWeight}
-                      min={0}
-                      onChange={(event) => {
-                        setRiderWeight(event.target.value);
-                        clearResults();
-                      }}
-                      unit={massUnit}
-                    />
-                    <InputField
-                      label="Bike weight"
-                      type="number"
-                      inputMode="decimal"
-                      value={bikeWeight}
-                      min={0}
-                      onChange={(event) => {
-                        setBikeWeight(event.target.value);
-                        clearResults();
-                      }}
-                      unit={massUnit}
-                    />
-                  </div>
-                </section>
-
-                <hr className="border-purple-100/70" />
-
-                <section className="space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Discipline</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {disciplineOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          setDiscipline(option.value);
-                          clearResults();
-                        }}
-                        className={clsx(
-                          "rounded-lg border border-purple-100 bg-white px-4 py-3 text-sm font-semibold text-left transition",
-                          discipline === option.value
-                            ? "border-purple-500 bg-purple-500/10 text-purple-700 shadow-sm"
-                            : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
-                <hr className="border-purple-100/70" />
-
-                <section className="space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Surface</p>
-                  <div className="flex flex-wrap gap-2">
-                    {surfaceOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          setSurface(option.value);
-                          clearResults();
-                        }}
-                        className={clsx(
-                          "rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
-                          surface === option.value
-                            ? "border-purple-500 bg-purple-500 text-white shadow-sm"
-                            : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
-                <hr className="border-purple-100/70" />
-
-                <section className="space-y-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rims</p>
-                  <div className="grid gap-8 lg:grid-cols-2">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
-                      <SelectField
-                        label="Rim type"
-                        value={rimType}
-                        placeholder="Select rim type"
-                        onChange={(event) => {
-                          setRimType(event.target.value as RimType | "");
-                          clearResults();
-                        }}
-                        options={rimTypeOptions}
-                      />
-                      <InputField
-                        label="Rim width"
-                        type="number"
-                        inputMode="decimal"
-                        value={rimWidth}
-                        min={0}
-                        onChange={(event) => {
-                          setRimWidth(event.target.value);
-                          clearResults();
-                        }}
-                        unit="mm"
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
-                      <SelectField
-                        label="Rim type"
-                        value={rimType}
-                        placeholder="Select rim type"
-                        helper="Mirrors front selection"
-                        onChange={(event) => {
-                          setRimType(event.target.value as RimType | "");
-                          clearResults();
-                        }}
-                        options={rimTypeOptions}
-                      />
-                      <InputField
-                        label="Rim width"
-                        type="number"
-                        inputMode="decimal"
-                        value={rimWidth}
-                        min={0}
-                        helper="Synced with front"
-                        onChange={(event) => {
-                          setRimWidth(event.target.value);
-                          clearResults();
-                        }}
-                        unit="mm"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <hr className="border-purple-100/70" />
-
-                <section className="space-y-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Tires</p>
-                  <div className="grid gap-8 lg:grid-cols-2">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
-                      <InputField
-                        label="Width"
-                        type="number"
-                        inputMode="decimal"
-                        value={tireWidth}
-                        min={0}
-                        onChange={(event) => {
-                          setTireWidth(event.target.value);
-                          clearResults();
-                        }}
-                        unit="mm"
-                      />
-                      <SelectField
-                        label="Casing"
-                        value={tireCasing}
-                        placeholder="Select casing"
-                        onChange={(event) => {
-                          setTireCasing(event.target.value as TireCasing | "");
-                          clearResults();
-                        }}
-                        options={casingOptions}
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
-                      <InputField
-                        label="Width"
-                        type="number"
-                        inputMode="decimal"
-                        value={tireWidth}
-                        min={0}
-                        helper="Synced with front"
-                        onChange={(event) => {
-                          setTireWidth(event.target.value);
-                          clearResults();
-                        }}
-                        unit="mm"
-                      />
-                      <SelectField
-                        label="Casing"
-                        value={tireCasing}
-                        placeholder="Select casing"
-                        helper="Mirrors front selection"
-                        onChange={(event) => {
-                          setTireCasing(event.target.value as TireCasing | "");
-                          clearResults();
-                        }}
-                        options={casingOptions}
-                      />
-                    </div>
-                  </div>
-                </section>
+                {activeStep ? (
+                  <section key={activeStep.key} className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                      {activeStep.label}
+                    </p>
+                    {activeStep.content}
+                  </section>
+                ) : null}
               </form>
             </div>
           </section>
 
+          {/* Navigation Buttons */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={!canGoBack}
+                className={clsx(
+                  "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                  canGoBack
+                    ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
+                    : "cursor-not-allowed text-purple-300"
+                )}
+              >
+                Previous
+              </button>
+              {currentStep === maxStepIndex ? (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {currentStep < maxStepIndex ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!canGoNext}
+                  className={clsx(
+                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    canGoNext
+                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                  )}
+                >
+                  {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  form="setup-form"
+                  disabled={!canCalculate}
+                  className={clsx(
+                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    canCalculate
+                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                  )}
+                >
+                  {isCalculating ? "Calculating…" : "Calculate"}
+                </button>
+              )}
+            </div>
+          </div>
+          </div>
+
           <aside className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
-              <div className="flex items-start justify-between gap-6">
+            <div className="flex h-[480px] flex-col rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
+              <div className="flex-shrink-0 flex items-start justify-between gap-6">
                 <div>
-                  <p className="text-sm font-medium text-purple-200/90">Recommended setup</p>
-                  <h2 className="mt-2 text-3xl font-semibold">Baseline pressures</h2>
+                  <p className="text-sm font-medium text-purple-200/90">Tire pressure</p>
+                  <h2 className="mt-2 text-3xl font-semibold">Reference</h2>
                   <p className="mt-4 text-sm text-white/60">
                     ⚠ The suggested pressures serve as an initial reference. 
-                    Further adjustment is advised to optimize performance for your specific configuration and conditions.
-                  </p>
+                    </p>
                 </div>
                 <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/40 lg:block" aria-hidden />
               </div>
@@ -561,32 +665,14 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="submit"
-                form="setup-form"
-                disabled={!canSubmit}
-                className={clsx(
-                  "w-full rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition sm:flex-1",
-                  canSubmit
-                    ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                    : "cursor-not-allowed bg-purple-100 text-purple-400"
-                )}
-              >
-                {isCalculating ? "CALCULATING…" : "CALCULATE"}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto sm:flex-none"
-              >
-                RESET
-              </button>
-            </div>
-
+            {/* Recommendations Section */}
             <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
               <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
               <ul className="mt-4 space-y-3 text-sm text-neutral-600">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
+                  Further adjustment is advised to optimize performance for your specific configuration and conditions.
+                </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Balance grip and speed by letting the front run slightly lower than the rear.
@@ -597,7 +683,7 @@ export default function App() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
-                  Adjust ±1 {unitLabel} to tune comfort once you sample the day’s terrain.
+                  Adjust ±1 {unitLabel} to tune comfort once you sample the day's terrain.
                 </li>
               </ul>
             </div>
@@ -607,3 +693,6 @@ export default function App() {
     </div>
   );
 }
+       
+
+            
