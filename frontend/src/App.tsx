@@ -490,9 +490,10 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[repeat(2,minmax(320px,1fr))]">
-          <section className="rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
-            <div className="space-y-8">
+        <div className="grid gap-12 lg:grid-cols-[3fr_2fr]">
+          <div className="space-y-6">
+            <section className="flex h-[480px] flex-col rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
+              <div className="flex-1 space-y-8 overflow-y-auto">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-purple-600">Setup progress</p>
@@ -559,79 +560,79 @@ export default function App() {
                     {activeStep.content}
                   </section>
                 ) : null}
-
-                <div className="border-t border-purple-100/70 pt-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={handleBack}
-                        disabled={!canGoBack}
-                        className={clsx(
-                          "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
-                          canGoBack
-                            ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
-                            : "cursor-not-allowed text-purple-300"
-                        )}
-                      >
-                        Previous
-                      </button>
-                      {currentStep === maxStepIndex ? (
-                        <button
-                          type="button"
-                          onClick={handleReset}
-                          className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
-                        >
-                          Reset
-                        </button>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      {currentStep < maxStepIndex ? (
-                        <button
-                          type="button"
-                          onClick={handleNext}
-                          disabled={!canGoNext}
-                          className={clsx(
-                            "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
-                            canGoNext
-                              ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                              : "cursor-not-allowed bg-purple-100 text-purple-400"
-                          )}
-                        >
-                          {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
-                        </button>
-                      ) : (
-                        <button
-                          type="submit"
-                          disabled={!canCalculate}
-                          className={clsx(
-                            "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
-                            canCalculate
-                              ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                              : "cursor-not-allowed bg-purple-100 text-purple-400"
-                          )}
-                        >
-                          {isCalculating ? "Calculating…" : "Calculate"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
               </form>
             </div>
           </section>
 
+          {/* Navigation Buttons */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={!canGoBack}
+                className={clsx(
+                  "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                  canGoBack
+                    ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
+                    : "cursor-not-allowed text-purple-300"
+                )}
+              >
+                Previous
+              </button>
+              {currentStep === maxStepIndex ? (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {currentStep < maxStepIndex ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!canGoNext}
+                  className={clsx(
+                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    canGoNext
+                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                  )}
+                >
+                  {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  form="setup-form"
+                  disabled={!canCalculate}
+                  className={clsx(
+                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    canCalculate
+                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                  )}
+                >
+                  {isCalculating ? "Calculating…" : "Calculate"}
+                </button>
+              )}
+            </div>
+          </div>
+          </div>
+
           <aside className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
-              <div className="flex items-start justify-between gap-6">
+            <div className="flex h-[480px] flex-col rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
+              <div className="flex-shrink-0 flex items-start justify-between gap-6">
                 <div>
-                  <p className="text-sm font-medium text-purple-200/90">Recommended setup</p>
-                  <h2 className="mt-2 text-3xl font-semibold">Baseline pressures</h2>
+                  <p className="text-sm font-medium text-purple-200/90">Tire pressure</p>
+                  <h2 className="mt-2 text-3xl font-semibold">Reference</h2>
                   <p className="mt-4 text-sm text-white/60">
                     ⚠ The suggested pressures serve as an initial reference. 
-                    Further adjustment is advised to optimize performance for your specific configuration and conditions.
-                  </p>
+                    </p>
                 </div>
                 <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/40 lg:block" aria-hidden />
               </div>
@@ -664,9 +665,14 @@ export default function App() {
               </div>
             </div>
 
+            {/* Recommendations Section */}
             <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
               <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
               <ul className="mt-4 space-y-3 text-sm text-neutral-600">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
+                  Further adjustment is advised to optimize performance for your specific configuration and conditions.
+                </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Balance grip and speed by letting the front run slightly lower than the rear.
@@ -677,7 +683,7 @@ export default function App() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
-                  Adjust ±1 {unitLabel} to tune comfort once you sample the day’s terrain.
+                  Adjust ±1 {unitLabel} to tune comfort once you sample the day's terrain.
                 </li>
               </ul>
             </div>
@@ -687,3 +693,6 @@ export default function App() {
     </div>
   );
 }
+       
+
+            
