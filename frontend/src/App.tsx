@@ -450,6 +450,7 @@ export default function App() {
     complete
   }));
 
+  const activeStep = stepConfigs[currentStep];
   const completedSteps = progressSteps.filter((step) => step.complete).length;
   const progressPercent = Math.round((completedSteps / progressSteps.length) * 100);
   const readyToCalculate = progressPercent === 100;
@@ -458,7 +459,6 @@ export default function App() {
   const canGoBack = currentStep > 0;
   const canGoNext = currentStep < maxStepIndex && stepConfigs[currentStep].complete;
   const nextStepLabel = stepConfigs[currentStep + 1]?.label;
-  const visibleSteps = stepConfigs.slice(0, currentStep + 1);
   const canCalculate = canSubmit && currentStep === maxStepIndex;
 
   const handleNext = () => {
@@ -490,7 +490,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+        <div className="grid gap-12 lg:grid-cols-[repeat(2,minmax(320px,1fr))]">
           <section className="rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
             <div className="space-y-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -551,54 +551,71 @@ export default function App() {
               </div>
 
               <form id="setup-form" className="space-y-10" onSubmit={handleSubmit}>
-                <div className="space-y-10">
-                  {visibleSteps.map((step, index) => (
-                    <div key={step.key} className="space-y-4">
-                      <section className="space-y-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
-                          {step.label}
-                        </p>
-                        {step.content}
-                      </section>
-                      {index < visibleSteps.length - 1 ? <hr className="border-purple-100/70" /> : null}
-                    </div>
-                  ))}
-                </div>
+                {activeStep ? (
+                  <section key={activeStep.key} className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                      {activeStep.label}
+                    </p>
+                    {activeStep.content}
+                  </section>
+                ) : null}
 
                 <div className="border-t border-purple-100/70 pt-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <button
-                      type="button"
-                      onClick={handleBack}
-                      disabled={!canGoBack}
-                      className={clsx(
-                        "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
-                        canGoBack
-                          ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
-                          : "cursor-not-allowed text-purple-300"
-                      )}
-                    >
-                      Previous
-                    </button>
-                    {currentStep < maxStepIndex ? (
+                    <div className="flex flex-col gap-3 sm:flex-row">
                       <button
                         type="button"
-                        onClick={handleNext}
-                        disabled={!canGoNext}
+                        onClick={handleBack}
+                        disabled={!canGoBack}
                         className={clsx(
-                          "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
-                          canGoNext
-                            ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                            : "cursor-not-allowed bg-purple-100 text-purple-400"
+                          "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                          canGoBack
+                            ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
+                            : "cursor-not-allowed text-purple-300"
                         )}
                       >
-                        {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
+                        Previous
                       </button>
-                    ) : (
-                      <p className="text-center text-sm font-medium text-purple-500 sm:text-left">
-                        All sections unlocked. Review and calculate when you're ready.
-                      </p>
-                    )}
+                      {currentStep === maxStepIndex ? (
+                        <button
+                          type="button"
+                          onClick={handleReset}
+                          className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
+                        >
+                          Reset
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      {currentStep < maxStepIndex ? (
+                        <button
+                          type="button"
+                          onClick={handleNext}
+                          disabled={!canGoNext}
+                          className={clsx(
+                            "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                            canGoNext
+                              ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                              : "cursor-not-allowed bg-purple-100 text-purple-400"
+                          )}
+                        >
+                          {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={!canCalculate}
+                          className={clsx(
+                            "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                            canCalculate
+                              ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                              : "cursor-not-allowed bg-purple-100 text-purple-400"
+                          )}
+                        >
+                          {isCalculating ? "Calculating…" : "Calculate"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </form>
@@ -645,33 +662,6 @@ export default function App() {
                   </p>
                 ) : null}
               </div>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="submit"
-                form="setup-form"
-                disabled={!canCalculate}
-                className={clsx(
-                  "w-full rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition sm:flex-1",
-                  canCalculate
-                    ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                    : "cursor-not-allowed bg-purple-100 text-purple-400"
-                )}
-              >
-                {currentStep === maxStepIndex
-                  ? isCalculating
-                    ? "CALCULATING…"
-                    : "CALCULATE"
-                  : "COMPLETE ALL SECTIONS"}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto sm:flex-none"
-              >
-                RESET
-              </button>
             </div>
 
             <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
