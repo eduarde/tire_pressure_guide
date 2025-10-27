@@ -9,13 +9,13 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
 
 export function SelectField({ label, options, helper, unit, className, ...props }: SelectFieldProps) {
   return (
-    <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">
+    <label className="block text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">
       <span>{label}</span>
-      <div className="mt-2 flex items-center gap-3 text-base font-medium text-neutral-900">
+      <div className="mt-2 flex items-center gap-2 text-sm font-medium text-neutral-900">
         <select
           {...props}
           className={clsx(
-            "flex-1 appearance-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-neutral-900 shadow-sm",
+            "flex-1 appearance-none rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm",
             "focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200",
             className
           )}
@@ -27,7 +27,7 @@ export function SelectField({ label, options, helper, unit, className, ...props 
           ))}
         </select>
         {unit ? (
-          <span className="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-600">
+          <span className="rounded-xl bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-600">
             {unit}
           </span>
         ) : null}
