@@ -286,327 +286,349 @@ export default function App() {
   const readyToCalculate = progressPercent === 100;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-neutral-900">
-      <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-12 px-4 py-16 sm:px-6 lg:px-10">
-        <section className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-sky-600 via-sky-500 to-sky-600 px-6 py-16 text-white shadow-2xl sm:px-12">
-          <div className="absolute -top-24 right-6 hidden h-64 w-64 rounded-full bg-sky-400/30 blur-3xl sm:block" aria-hidden />
-          <div className="absolute -bottom-20 left-10 hidden h-56 w-56 rounded-full bg-sky-400/20 blur-3xl sm:block" aria-hidden />
-          <div className="relative max-w-3xl space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/70">Tire pressure guide</p>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">Ride-ready pressure confidence</h1>
-            <p className="text-base leading-relaxed text-white/80 sm:text-lg">
-              Dial in the perfect setup with a clean, material-inspired interface that keeps every decision focused on a single accent colour.
-            </p>
-          </div>
-        </section>
+    <div className="min-h-screen bg-emerald-50 text-neutral-900">
+      <header className="border-b border-emerald-200/70 bg-white/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-500">Tire Pressure Studio</p>
+          <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
+            How modern riders dial in confident tire pressure, every single time.
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Map your setup from weight to casing in a few guided steps, then apply data-backed recommendations tuned to your
+            terrain, rims, and riding discipline.
+          </p>
+        </div>
+      </header>
 
-        <section className="rounded-[3rem] border border-neutral-900/30 bg-neutral-900 px-6 py-10 text-white shadow-2xl shadow-neutral-900/40 sm:px-12">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-4">
-              <p className="text-sm font-medium text-white/60">Recommended setup</p>
-              <h2 className="text-3xl font-semibold sm:text-4xl">Baseline tire pressures</h2>
-              <p className="max-w-xl text-sm leading-relaxed text-white/60">
-                Lock in a confident starting point, then fine-tune a touch to match trail feel, conditions, and personal preference.
-              </p>
-            </div>
-            <BoltIcon className="hidden h-14 w-14 shrink-0 text-white/20 sm:block" aria-hidden />
-          </div>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/10 px-6 py-6 text-center shadow-lg shadow-black/30">
-              <p className="text-sm font-medium text-white/60">Front</p>
-              <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
-              <p className="text-sm font-medium text-white/50">{unitLabel}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/10 px-6 py-6 text-center shadow-lg shadow-black/30">
-              <p className="text-sm font-medium text-white/60">Rear</p>
-              <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
-              <p className="text-sm font-medium text-white/50">{unitLabel}</p>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="submit"
-              form="setup-form"
-              disabled={!readyToCalculate}
-              className={clsx(
-                "inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] transition",
-                readyToCalculate
-                  ? "bg-sky-500 text-neutral-900 shadow-lg shadow-sky-500/30 hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200"
-                  : "cursor-not-allowed bg-white/10 text-white/40"
-              )}
-            >
-              CALCULATE
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-2xl border border-sky-400/40 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-sky-200 transition hover:border-sky-200 hover:text-sky-100"
-            >
-              RESET
-            </button>
-          </div>
-        </section>
-
-        <section className="rounded-[3rem] border border-white/60 bg-white px-6 py-10 shadow-xl sm:px-12">
-          <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-neutral-600">Setup progress</p>
-                <p className="text-sm text-neutral-500">{progressPercent}% complete</p>
+      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
+          <section className="rounded-3xl border border-emerald-200/70 bg-white/80 p-8 shadow-xl shadow-emerald-100/80 backdrop-blur">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-neutral-600">Setup progress</p>
+                  <p className="text-sm text-neutral-500">{progressPercent}% complete</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <SegmentedControl
+                    value={massUnit}
+                    onChange={(value) => {
+                      setMassUnit(value);
+                      setShowResults(false);
+                    }}
+                    options={[
+                      { label: "kg", value: "kg" },
+                      { label: "lbs", value: "lbs" }
+                    ]}
+                  />
+                  <SegmentedControl
+                    value={pressureUnit}
+                    onChange={(value) => {
+                      setPressureUnit(value);
+                      setShowResults(false);
+                    }}
+                    options={[
+                      { label: "psi", value: "PSI" },
+                      { label: "bar", value: "BAR" }
+                    ]}
+                  />
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <SegmentedControl
-                  value={massUnit}
-                  onChange={(value) => {
-                    setMassUnit(value);
+
+              <div className="space-y-4">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-100">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                    aria-hidden
+                  />
+                </div>
+                <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-5">
+                  {progressSteps.map((step, index) => (
+                    <div key={step.label} className="flex items-center gap-2">
+                      <span
+                        className={clsx(
+                          "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold",
+                          step.complete
+                            ? "border-emerald-500 bg-emerald-500 text-white"
+                            : "border-emerald-100 bg-white text-neutral-400"
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="font-medium">{step.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <form
+                id="setup-form"
+                className="space-y-10"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!readyToCalculate) {
                     setShowResults(false);
-                  }}
-                  options={[
-                    { label: "kg", value: "kg" },
-                    { label: "lbs", value: "lbs" }
-                  ]}
-                />
-                <SegmentedControl
-                  value={pressureUnit}
-                  onChange={(value) => {
-                    setPressureUnit(value);
-                    setShowResults(false);
-                  }}
-                  options={[
-                    { label: "psi", value: "PSI" },
-                    { label: "bar", value: "BAR" }
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-sky-500 transition-[width] duration-300"
-                  style={{ width: `${progressPercent}%` }}
-                  aria-hidden
-                />
-              </div>
-              <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-5">
-                {progressSteps.map((step, index) => (
-                  <div key={step.label} className="flex items-center gap-2">
-                    <span
-                      className={clsx(
-                        "flex h-8 w-8 items-center justify-center rounded-full border text-sm font-semibold",
-                        step.complete
-                          ? "border-sky-500 bg-sky-500 text-white"
-                          : "border-slate-200 bg-white text-neutral-400"
-                      )}
-                    >
-                      {index + 1}
-                    </span>
-                    <span className="font-medium">{step.label}</span>
+                    return;
+                  }
+                  setShowResults(true);
+                }}
+              >
+                <div className="space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Weight</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <InputField
+                      label="Rider weight"
+                      type="number"
+                      inputMode="decimal"
+                      value={riderWeight}
+                      min={0}
+                      onChange={(event) => {
+                        setRiderWeight(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit={massUnit}
+                    />
+                    <InputField
+                      label="Bike weight"
+                      type="number"
+                      inputMode="decimal"
+                      value={bikeWeight}
+                      min={0}
+                      onChange={(event) => {
+                        setBikeWeight(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit={massUnit}
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                </div>
 
-          <form
-            id="setup-form"
-            className="mt-10 space-y-8"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!readyToCalculate) {
-                setShowResults(false);
-                return;
-              }
-              setShowResults(true);
-            }}
-          >
-            <div className="space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Weight</p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField
-                  label="Rider weight"
-                  type="number"
-                  inputMode="decimal"
-                  value={riderWeight}
-                  min={0}
-                  onChange={(event) => {
-                    setRiderWeight(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit={massUnit}
-                />
-                <InputField
-                  label="Bike weight"
-                  type="number"
-                  inputMode="decimal"
-                  value={bikeWeight}
-                  min={0}
-                  onChange={(event) => {
-                    setBikeWeight(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit={massUnit}
-                />
+                <div className="space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Discipline</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {disciplineOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setDiscipline(option.value);
+                          setShowResults(false);
+                        }}
+                        className={clsx(
+                          "rounded-lg border border-emerald-100 bg-white px-4 py-3 text-sm font-semibold text-left transition",
+                          discipline === option.value
+                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 shadow-sm"
+                            : "text-neutral-600 hover:border-emerald-200 hover:text-emerald-700"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Surface</p>
+                  <div className="flex flex-wrap gap-2">
+                    {surfaceOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setSurface(option.value);
+                          setShowResults(false);
+                        }}
+                        className={clsx(
+                          "rounded-full border border-emerald-100 bg-white px-4 py-2 text-sm font-medium transition",
+                          surface === option.value
+                            ? "border-emerald-500 bg-emerald-500 text-white shadow-sm"
+                            : "text-neutral-600 hover:border-emerald-200 hover:text-emerald-700"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-10 lg:grid-cols-2">
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Front rims</p>
+                    <SelectField
+                      label="Front rim type"
+                      value={frontRimType}
+                      placeholder="Select rim type"
+                      onChange={(event) => {
+                        setFrontRimType(event.target.value as RimType | "");
+                        setShowResults(false);
+                      }}
+                      options={rimTypeOptions}
+                    />
+                    <InputField
+                      label="Rim width"
+                      type="number"
+                      inputMode="decimal"
+                      value={frontRimWidth}
+                      min={0}
+                      onChange={(event) => {
+                        setFrontRimWidth(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit="mm"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rear rims</p>
+                    <SelectField
+                      label="Rear rim type"
+                      value={rearRimType}
+                      placeholder="Select rim type"
+                      onChange={(event) => {
+                        setRearRimType(event.target.value as RimType | "");
+                        setShowResults(false);
+                      }}
+                      options={rimTypeOptions}
+                    />
+                    <InputField
+                      label="Rim width"
+                      type="number"
+                      inputMode="decimal"
+                      value={rearRimWidth}
+                      min={0}
+                      onChange={(event) => {
+                        setRearRimWidth(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit="mm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-10 lg:grid-cols-2">
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Front tire</p>
+                    <InputField
+                      label="Width"
+                      type="number"
+                      inputMode="decimal"
+                      value={frontWidth}
+                      min={0}
+                      onChange={(event) => {
+                        setFrontWidth(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit="mm"
+                    />
+                    <SelectField
+                      label="Casing"
+                      value={frontCasing}
+                      placeholder="Select casing"
+                      onChange={(event) => {
+                        setFrontCasing(event.target.value as TireCasing | "");
+                        setShowResults(false);
+                      }}
+                      options={casingOptions}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rear tire</p>
+                    <InputField
+                      label="Width"
+                      type="number"
+                      inputMode="decimal"
+                      value={rearWidth}
+                      min={0}
+                      onChange={(event) => {
+                        setRearWidth(event.target.value);
+                        setShowResults(false);
+                      }}
+                      unit="mm"
+                    />
+                    <SelectField
+                      label="Casing"
+                      value={rearCasing}
+                      placeholder="Select casing"
+                      onChange={(event) => {
+                        setRearCasing(event.target.value as TireCasing | "");
+                        setShowResults(false);
+                      }}
+                      options={casingOptions}
+                    />
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <aside className="flex flex-col gap-6">
+            <div className="rounded-3xl border border-neutral-900/40 bg-neutral-900 p-8 text-white shadow-2xl shadow-neutral-900/60">
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-sm font-medium text-emerald-300/90">Recommended setup</p>
+                  <h2 className="mt-2 text-3xl font-semibold">Baseline pressures</h2>
+                  <p className="mt-4 text-sm text-white/60">
+                    Use these as a starting point, then make one-click tweaks once you feel the terrain and grip on the day.
+                  </p>
+                </div>
+                <BoltIcon className="hidden h-12 w-12 shrink-0 text-emerald-400/40 lg:block" aria-hidden />
+              </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/40">
+                  <p className="text-sm font-medium text-white/60">Front</p>
+                  <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
+                  <p className="text-sm font-medium text-white/50">{unitLabel}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/40">
+                  <p className="text-sm font-medium text-white/60">Rear</p>
+                  <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
+                  <p className="text-sm font-medium text-white/50">{unitLabel}</p>
+                </div>
               </div>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Discipline</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {disciplineOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      setDiscipline(option.value);
-                      setShowResults(false);
-                    }}
-                    className={clsx(
-                      "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition",
-                      discipline === option.value
-                        ? "border-sky-500 bg-sky-500 text-white shadow-sm"
-                        : "text-neutral-600 hover:border-sky-200 hover:text-sky-700"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+            <div className="rounded-3xl border border-emerald-200/70 bg-white/80 p-6 shadow-lg shadow-emerald-100/70">
+              <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
+              <ul className="mt-4 space-y-3 text-sm text-neutral-600">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  Balance grip and speed by letting the front run slightly lower than the rear.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  Recheck pressure before each ride—temperature swings can move readings by 1-2 {unitLabel}.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400" aria-hidden />
+                  Adjust ±1 {unitLabel} to tune comfort once you sample the day’s terrain.
+                </li>
+              </ul>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Surface</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {surfaceOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      setSurface(option.value);
-                      setShowResults(false);
-                    }}
-                    className={clsx(
-                      "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition",
-                      surface === option.value
-                        ? "border-sky-500 bg-sky-500 text-white shadow-sm"
-                        : "text-neutral-600 hover:border-sky-200 hover:text-sky-700"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="submit"
+                form="setup-form"
+                disabled={!readyToCalculate}
+                className={clsx(
+                  "flex-1 rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition",
+                  readyToCalculate
+                    ? "bg-emerald-500 text-neutral-900 shadow-lg shadow-emerald-400/40 hover:bg-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200"
+                    : "cursor-not-allowed bg-emerald-100 text-emerald-400"
+                )}
+              >
+                CALCULATE
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex items-center justify-center rounded-full border border-emerald-300 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-600 transition hover:border-emerald-400 hover:text-emerald-700"
+              >
+                RESET
+              </button>
             </div>
-
-            <div className="grid gap-8 md:grid-cols-2">
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Front rims</p>
-                <SelectField
-                  label="Front rim type"
-                  value={frontRimType}
-                  placeholder="Select rim type"
-                  onChange={(event) => {
-                    setFrontRimType(event.target.value as RimType | "");
-                    setShowResults(false);
-                  }}
-                  options={rimTypeOptions}
-                />
-                <InputField
-                  label="Rim width"
-                  type="number"
-                  inputMode="decimal"
-                  value={frontRimWidth}
-                  min={0}
-                  onChange={(event) => {
-                    setFrontRimWidth(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit="mm"
-                />
-              </div>
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Rear rims</p>
-                <SelectField
-                  label="Rear rim type"
-                  value={rearRimType}
-                  placeholder="Select rim type"
-                  onChange={(event) => {
-                    setRearRimType(event.target.value as RimType | "");
-                    setShowResults(false);
-                  }}
-                  options={rimTypeOptions}
-                />
-                <InputField
-                  label="Rim width"
-                  type="number"
-                  inputMode="decimal"
-                  value={rearRimWidth}
-                  min={0}
-                  onChange={(event) => {
-                    setRearRimWidth(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit="mm"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2">
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Front tire</p>
-                <InputField
-                  label="Width"
-                  type="number"
-                  inputMode="decimal"
-                  value={frontWidth}
-                  min={0}
-                  onChange={(event) => {
-                    setFrontWidth(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit="mm"
-                />
-                <SelectField
-                  label="Casing"
-                  value={frontCasing}
-                  placeholder="Select casing"
-                  onChange={(event) => {
-                    setFrontCasing(event.target.value as TireCasing | "");
-                    setShowResults(false);
-                  }}
-                  options={casingOptions}
-                />
-              </div>
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Rear tire</p>
-                <InputField
-                  label="Width"
-                  type="number"
-                  inputMode="decimal"
-                  value={rearWidth}
-                  min={0}
-                  onChange={(event) => {
-                    setRearWidth(event.target.value);
-                    setShowResults(false);
-                  }}
-                  unit="mm"
-                />
-                <SelectField
-                  label="Casing"
-                  value={rearCasing}
-                  placeholder="Select casing"
-                  onChange={(event) => {
-                    setRearCasing(event.target.value as TireCasing | "");
-                    setShowResults(false);
-                  }}
-                  options={casingOptions}
-                />
-              </div>
-            </div>
-          </form>
-        </section>
+          </aside>
+        </div>
       </main>
     </div>
   );

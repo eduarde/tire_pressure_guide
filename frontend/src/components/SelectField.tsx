@@ -25,7 +25,7 @@ export function SelectField({
           {...props}
           className={clsx(
             "flex-1 appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm",
-            "focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600/15",
+            "focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20",
             className
           )}
         >

@@ -25,8 +25,8 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             className={clsx(
               "min-w-[48px] rounded-md px-3 py-1.5 transition",
               active
-                ? "bg-sky-600 text-white shadow-sm"
-                : "text-neutral-600 hover:bg-sky-50 hover:text-sky-700"
+                ? "bg-emerald-500 text-white shadow-sm"
+                : "text-neutral-600 hover:bg-emerald-50 hover:text-emerald-700"
             )}
           >
             {option.label}
