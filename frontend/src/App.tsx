@@ -9,8 +9,9 @@ type MassUnit = "kg" | "lbs";
 type RimType = "HOOKLESS" | "HOOKED" | "TUBULAR" | "TUBES";
 type TireCasing = "STANDARD" | "REINFORCED" | "THIN" | "DOWNHILL_CASING";
 
-const API_ENDPOINT =
-  import.meta.env.VITE_COMPUTE_URL ?? "http://127.0.0.1:8085/compute";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8088";
+const API_ENDPOINT = `${API_BASE_URL}/compute`;
+
 
 interface ApiPressureResponse {
   front_wheel: number;
@@ -243,7 +244,7 @@ export default function App() {
             Tire Pressure Studio
           </span>
           <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
-            Dial in confident tire pressure for every ride.
+            No charts, no guesswork — just the right pressure, every time.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
             Guide your setup from weight to casing in a few quick steps, then review tailored recommendations aligned to your terrain, rims, and riding discipline.
@@ -525,7 +526,8 @@ export default function App() {
                   <p className="text-sm font-medium text-purple-200/90">Recommended setup</p>
                   <h2 className="mt-2 text-3xl font-semibold">Baseline pressures</h2>
                   <p className="mt-4 text-sm text-white/60">
-                    Use these as a starting point, then make one-click tweaks once you feel the terrain and grip on the day.
+                    ⚠ The suggested pressures serve as an initial reference. 
+                    Further adjustment is advised to optimize performance for your specific configuration and conditions.
                   </p>
                 </div>
                 <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/40 lg:block" aria-hidden />
