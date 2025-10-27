@@ -1,8 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .schemas import TirePressureRequest, TirePressure
 from .services import build_and_compute
+from .core.config import ALLOWED_ORIGINS
 
 app = FastAPI()
+
+# Configure CORS to allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,  # Set to False to allow more flexible origins
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
