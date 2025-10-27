@@ -24,10 +24,8 @@ def get_cors_origins() -> List[str]:
         "http://127.0.0.1:5175",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        # Allow network access from local network
-        "http://192.168.0.185:5173",
-        "http://192.168.0.185:5174",
-        "http://192.168.0.185:5175",
+        # If you need to allow other network IPs, set ALLOWED_ORIGINS in your environment.
+        # The following are safe defaults for local development only.
     ]
 
 
