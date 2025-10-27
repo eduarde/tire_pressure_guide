@@ -7,7 +7,7 @@
 }
 
 body {
-  @apply min-h-screen bg-carbon-950 text-carbon-50 antialiased;
+  @apply min-h-screen bg-neutral-100 text-neutral-900 antialiased;
 }
 
 ::-webkit-scrollbar {
@@ -15,6 +15,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.4);
+  background-color: rgba(148, 163, 184, 0.35);
   border-radius: 9999px;
 }

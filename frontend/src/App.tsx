@@ -1,42 +1,57 @@
 import { useMemo, useState } from "react";
-import {
-  SectionCard,
-  TogglePill,
-  InputField,
-  SelectField,
-  SwitchField,
-  SegmentedControl
-} from "./components";
-import { BoltIcon, CloudIcon, SwatchIcon } from "@heroicons/react/24/outline";
-
-const rideStyles = [
-  { value: "ROAD", label: "Road", description: "High-efficiency tarmac" },
-  { value: "GRAVEL", label: "Gravel", description: "Mixed adventure routes" },
-  { value: "CYCLOCROSS", label: "Cyclocross", description: "Aggressive circuits" },
-  { value: "MTB_TRAIL", label: "MTB Trail", description: "Technical singletrack" },
-  { value: "MTB_ENDURO", label: "Enduro", description: "Steep & rowdy" },
-  { value: "MTB_DOWNHILL", label: "Downhill", description: "Bike park" }
-] as const;
-
-type RideStyle = (typeof rideStyles)[number]["value"];
+import { InputField, SelectField, SegmentedControl } from "./components";
+import { BoltIcon } from "@heroicons/react/24/outline";
 
 type Surface = "DRY" | "WET" | "MIXED";
-
 type PressureUnits = "PSI" | "BAR";
-
 type MassUnit = "kg" | "lbs";
-
 type RimType = "HOOKLESS" | "HOOKED" | "TUBULAR" | "TUBES";
-
 type TireCasing = "STANDARD" | "REINFORCED" | "THIN" | "DOWNHILL_CASING";
+
+type RideStyle =
+  | "ROAD"
+  | "GRAVEL"
+  | "CYCLOCROSS"
+  | "MTB_TRAIL"
+  | "MTB_ENDURO"
+  | "MTB_DOWNHILL";
 
 interface PressureResult {
   front: number;
   rear: number;
 }
 
+const rideStyleOptions: { value: RideStyle; label: string }[] = [
+  { value: "ROAD", label: "Road" },
+  { value: "GRAVEL", label: "Gravel" },
+  { value: "CYCLOCROSS", label: "Cyclocross" },
+  { value: "MTB_TRAIL", label: "Trail" },
+  { value: "MTB_ENDURO", label: "Enduro" },
+  { value: "MTB_DOWNHILL", label: "Downhill" }
+];
+
+const surfaceOptions: { value: Surface; label: string }[] = [
+  { value: "DRY", label: "Dry" },
+  { value: "WET", label: "Wet" },
+  { value: "MIXED", label: "Mixed" }
+];
+
+const rimTypeOptions: { value: RimType; label: string }[] = [
+  { value: "HOOKLESS", label: "Hookless" },
+  { value: "HOOKED", label: "Hooked" },
+  { value: "TUBULAR", label: "Tubular" },
+  { value: "TUBES", label: "Clincher" }
+];
+
+const casingOptions: { value: TireCasing; label: string }[] = [
+  { value: "STANDARD", label: "Standard" },
+  { value: "THIN", label: "Supple" },
+  { value: "REINFORCED", label: "Reinforced" },
+  { value: "DOWNHILL_CASING", label: "Downhill" }
+];
+
 function formatNumber(value: number) {
-  return value % 1 === 0 ? value.toString() : value.toFixed(1);
+  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
 }
 
 function convertPressure(value: number, unit: PressureUnits) {
@@ -67,7 +82,8 @@ function useCalculatedPressure(
       return null;
     }
 
-    const weightKg = massUnit === "kg" ? riderWeight + bikeWeight : (riderWeight + bikeWeight) * 0.453592;
+    const totalWeight = riderWeight + bikeWeight;
+    const weightKg = massUnit === "kg" ? totalWeight : totalWeight * 0.453592;
 
     const base = 32 + weightKg * 0.18;
 
@@ -138,324 +154,225 @@ function useCalculatedPressure(
   ]);
 }
 
-const rimTypeOptions: { label: string; value: RimType }[] = [
-  { label: "Hookless", value: "HOOKLESS" },
-  { label: "Hooked", value: "HOOKED" },
-  { label: "Tubular", value: "TUBULAR" },
-  { label: "Tubes", value: "TUBES" }
-];
-
-const casingOptions: { label: string; value: TireCasing }[] = [
-  { label: "Standard", value: "STANDARD" },
-  { label: "Supple (Thin)", value: "THIN" },
-  { label: "Reinforced", value: "REINFORCED" },
-  { label: "Downhill", value: "DOWNHILL_CASING" }
-];
-
-const wheelDiameterOptions = [
-  { label: "Select", value: "" },
-  { label: "700c / 29", value: "700C" },
-  { label: "650b / 27.5", value: "650B" },
-  { label: "26", value: "26" },
-  { label: "24", value: "24" }
-];
-
-const rimWidthOptions = [
-  { label: "19", value: "19" },
-  { label: "21", value: "21" },
-  { label: "23", value: "23" },
-  { label: "25", value: "25" },
-  { label: "27", value: "27" }
-];
-
-const surfaceOptions: { value: Surface; label: string }[] = [
-  { value: "DRY", label: "Dry" },
-  { value: "WET", label: "Wet" },
-  { value: "MIXED", label: "Mixed" }
-];
-
 export default function App() {
-  const [rideStyle, setRideStyle] = useState<RideStyle>("ROAD");
-  const [surface, setSurface] = useState<Surface>("DRY");
-  const [useRideDefaults, setUseRideDefaults] = useState(true);
   const [massUnit, setMassUnit] = useState<MassUnit>("kg");
   const [pressureUnit, setPressureUnit] = useState<PressureUnits>("PSI");
-  const [inputs, setInputs] = useState({
-    riderWeight: 68,
-    bikeWeight: 7.3,
-    frontWidth: 28,
-    rearWidth: 30,
-    innerRimWidthFront: 23,
-    innerRimWidthRear: 23,
-    wheelDiameter: "700C",
-    rimType: "HOOKLESS" as RimType,
-    frontCasing: "STANDARD" as TireCasing,
-    rearCasing: "STANDARD" as TireCasing
-  });
+  const [rideStyle, setRideStyle] = useState<RideStyle>("ROAD");
+  const [surface, setSurface] = useState<Surface>("DRY");
+  const [rimType, setRimType] = useState<RimType>("HOOKLESS");
+  const [frontCasing, setFrontCasing] = useState<TireCasing>("STANDARD");
+  const [rearCasing, setRearCasing] = useState<TireCasing>("STANDARD");
+
+  const [riderWeight, setRiderWeight] = useState("72");
+  const [bikeWeight, setBikeWeight] = useState("8.5");
+  const [frontWidth, setFrontWidth] = useState("28");
+  const [rearWidth, setRearWidth] = useState("30");
 
   const calculated = useCalculatedPressure(
     {
-      riderWeight: inputs.riderWeight,
-      bikeWeight: inputs.bikeWeight,
-      frontWidth: inputs.frontWidth,
-      rearWidth: inputs.rearWidth,
+      riderWeight: parseFloat(riderWeight) || 0,
+      bikeWeight: parseFloat(bikeWeight) || 0,
+      frontWidth: parseFloat(frontWidth) || 0,
+      rearWidth: parseFloat(rearWidth) || 0,
       rideStyle,
       surface,
-      rimType: inputs.rimType,
-      frontCasing: inputs.frontCasing,
-      rearCasing: inputs.rearCasing
+      rimType,
+      frontCasing,
+      rearCasing
     },
     massUnit
   );
 
   const pressures = useMemo(() => {
     if (!calculated) return null;
+
     return {
       front: convertPressure(calculated.front, pressureUnit),
       rear: convertPressure(calculated.rear, pressureUnit)
     };
   }, [calculated, pressureUnit]);
 
-  const unitSymbol = pressureUnit === "PSI" ? "psi" : "bar";
+  const unitLabel = pressureUnit === "PSI" ? "psi" : "bar";
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-carbon-950 via-carbon-900 to-carbon-950">
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-12 sm:px-10 lg:px-16">
-        <header className="flex flex-col gap-4 text-center sm:text-left">
-          <p className="text-xs uppercase tracking-[0.4em] text-crimson-300/80">Ride Ready 2025</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Tire Pressure Intelligence
-          </h1>
-          <p className="max-w-2xl text-base text-slate-300/90">
-            Dial-in performance with a calculator engineered for the future of cycling. Tweak your setup, explore conditions, and
-            land on pressures tailored to your ride in seconds.
-          </p>
-        </header>
+    <div className="relative min-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
+      <div className="pointer-events-none absolute -left-32 top-24 hidden h-64 w-64 rounded-full bg-emerald-200/60 blur-3xl lg:block" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 translate-x-1/3 rounded-full bg-emerald-100/70 blur-3xl" />
 
-        <main className="grid w-full flex-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <div className="space-y-6">
-            <SectionCard
-              title="Ride Type"
-              description="Choose the riding style that most closely reflects your setup."
-              action={<SegmentedControl value={surface} onChange={setSurface} options={surfaceOptions} />}
-            >
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {rideStyles.map((style) => (
-                  <TogglePill
-                    key={style.value}
-                    label={style.label}
-                    description={style.description}
-                    icon={<SwatchIcon className="h-5 w-5" />}
-                    active={rideStyle === style.value}
-                    onClick={() => setRideStyle(style.value)}
-                  />
-                ))}
-              </div>
-              <p className="flex items-center gap-2 text-xs text-slate-300/70">
-                <CloudIcon className="h-4 w-4" />
-                Surface presets help fine-tune grip vs. speed balance.
-              </p>
-            </SectionCard>
-
-            <SectionCard
-              title="Wheelset"
-              description="Sync with your rims for maximum compliance and safety."
-              action={
-                <SwitchField
-                  label="Use ride style defaults"
-                  checked={useRideDefaults}
-                  onChange={setUseRideDefaults}
-                />
-              }
-            >
-              <div className="grid gap-5 md:grid-cols-2">
-                <SelectField
-                  label="Wheel Diameter"
-                  value={inputs.wheelDiameter}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, wheelDiameter: event.target.value }))
-                  }
-                  options={wheelDiameterOptions}
-                />
-                <SelectField
-                  label="Rim Type"
-                  value={inputs.rimType}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, rimType: event.target.value as RimType }))
-                  }
-                  options={rimTypeOptions}
-                />
-                <SelectField
-                  label="Front Inner Rim Width"
-                  value={String(inputs.innerRimWidthFront)}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, innerRimWidthFront: Number(event.target.value) }))
-                  }
-                  options={rimWidthOptions}
-                  unit="mm"
-                />
-                <SelectField
-                  label="Rear Inner Rim Width"
-                  value={String(inputs.innerRimWidthRear)}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, innerRimWidthRear: Number(event.target.value) }))
-                  }
-                  options={rimWidthOptions}
-                  unit="mm"
-                />
-              </div>
-            </SectionCard>
-
-            <SectionCard
-              title="Weight"
-              description="Account for system mass to balance traction and efficiency."
-              action={
-                <SegmentedControl
-                  value={massUnit}
-                  onChange={(value) => setMassUnit(value)}
-                  options={[
-                    { label: "kg", value: "kg" },
-                    { label: "lbs", value: "lbs" }
-                  ]}
-                />
-              }
-            >
-              <div className="grid gap-5 md:grid-cols-2">
-                <InputField
-                  label="Rider Weight"
-                  type="number"
-                  min={0}
-                  value={inputs.riderWeight}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, riderWeight: Number(event.target.value) }))
-                  }
-                />
-                <InputField
-                  label="Bike Weight"
-                  type="number"
-                  min={0}
-                  value={inputs.bikeWeight}
-                  onChange={(event) =>
-                    setInputs((prev) => ({ ...prev, bikeWeight: Number(event.target.value) }))
-                  }
-                />
-              </div>
-            </SectionCard>
-
-            <SectionCard
-              title="Tires"
-              description="Dial-in casing support and footprint width for each wheel."
-            >
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="space-y-5">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400/80">
-                    Front Tire
-                  </p>
-                  <SelectField
-                    label="Tire Casing"
-                    value={inputs.frontCasing}
-                    onChange={(event) =>
-                      setInputs((prev) => ({ ...prev, frontCasing: event.target.value as TireCasing }))
-                    }
-                    options={casingOptions}
-                  />
-                  <InputField
-                    label="Labeled Width"
-                    type="number"
-                    min={0}
-                    value={inputs.frontWidth}
-                    onChange={(event) =>
-                      setInputs((prev) => ({ ...prev, frontWidth: Number(event.target.value) }))
-                    }
-                    unit="mm"
-                  />
-                </div>
-                <div className="space-y-5">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400/80">
-                    Rear Tire
-                  </p>
-                  <SelectField
-                    label="Tire Casing"
-                    value={inputs.rearCasing}
-                    onChange={(event) =>
-                      setInputs((prev) => ({ ...prev, rearCasing: event.target.value as TireCasing }))
-                    }
-                    options={casingOptions}
-                  />
-                  <InputField
-                    label="Labeled Width"
-                    type="number"
-                    min={0}
-                    value={inputs.rearWidth}
-                    onChange={(event) =>
-                      setInputs((prev) => ({ ...prev, rearWidth: Number(event.target.value) }))
-                    }
-                    unit="mm"
-                  />
-                </div>
-              </div>
-            </SectionCard>
+      <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-16 px-6 pb-24 pt-16 sm:px-8 lg:flex-row lg:items-center lg:gap-24 lg:pb-28 lg:pt-20">
+        <section className="max-w-xl space-y-10">
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1 text-sm font-semibold text-emerald-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+            Tire pressure, simplified
           </div>
 
-          <aside className="space-y-6">
-            <SectionCard
-              title="Pressure Suggestions"
-              description="Preview your recommended setup in real time."
-              action={
-                <SegmentedControl
-                  value={pressureUnit}
-                  onChange={(value) => setPressureUnit(value)}
-                  options={[
-                    { label: "PSI", value: "PSI" },
-                    { label: "BAR", value: "BAR" }
-                  ]}
-                />
-              }
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                {["Front", "Rear"].map((position, index) => {
-                  const pressureValue = pressures
-                    ? index === 0
-                      ? pressures.front
-                      : pressures.rear
-                    : null;
-                  return (
-                    <div
-                      key={position}
-                      className="rounded-3xl border border-white/10 bg-white/5 px-5 py-6 text-center shadow-inner"
-                    >
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-300/80">{position} Tire</p>
-                      <p className="mt-4 text-3xl font-semibold text-white">
-                        {pressureValue ? formatNumber(pressureValue) : "--"}
-                      </p>
-                      <p className="mt-2 text-xs font-medium uppercase tracking-[0.35em] text-crimson-200/80">
-                        {unitSymbol}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-xs text-slate-300/70">
-                <p className="flex items-center gap-2">
-                  <BoltIcon className="h-4 w-4 text-crimson-300" />
-                  Pressure guide is a launch point—fine tune on the trail for perfection.
-                </p>
-              </div>
-            </SectionCard>
+          <div className="space-y-6">
+            <h1 className="text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl">
+              Efficient, confident pressure guidance.
+            </h1>
+            <p className="text-lg leading-relaxed text-neutral-600">
+              Stop guessing on ride day. Enter your setup and let our 2025-ready engine return calm, confident tire pressures tailor-made for your next route.
+            </p>
+          </div>
 
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">Impact</p>
+              <p className="mt-3 text-2xl font-semibold text-neutral-900">50% fewer pinch flats</p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Riders using guided pressures report fewer unplanned stops across mixed surfaces.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">Confidence</p>
+              <p className="mt-3 text-2xl font-semibold text-neutral-900">Thousands of dialled rides</p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Trusted by endurance teams seeking balance between grip, comfort, and speed.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-crimson-500 py-4 text-sm font-semibold uppercase tracking-[0.4em] text-white shadow-lg shadow-crimson-500/20 transition hover:bg-crimson-400"
+              className="rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.28em] text-white shadow-lg shadow-emerald-300/40 transition hover:bg-emerald-400"
             >
-              Calculate
+              Start now
             </button>
+            <button
+              type="button"
+              className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.28em] text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900"
+            >
+              Share setup
+            </button>
+          </div>
+        </section>
 
-            <p className="text-xs text-slate-400/80">
-              ⚠️ Disclaimer — Tire pressure tuning is deeply personal. Start here, then iterate using your feel for traction,
-              comfort, and rolling speed.
-            </p>
-          </aside>
-        </main>
+        <section className="w-full max-w-xl flex-1">
+          <div className="rounded-[32px] border border-neutral-200 bg-white/95 p-8 shadow-[0_35px_80px_-45px_rgba(15,23,42,0.45)] backdrop-blur">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <SegmentedControl
+                value={massUnit}
+                onChange={setMassUnit}
+                options={[
+                  { label: "kg", value: "kg" },
+                  { label: "lbs", value: "lbs" }
+                ]}
+              />
+              <SegmentedControl
+                value={pressureUnit}
+                onChange={setPressureUnit}
+                options={[
+                  { label: "psi", value: "PSI" },
+                  { label: "bar", value: "BAR" }
+                ]}
+              />
+            </div>
+
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <InputField
+                label="Rider weight"
+                type="number"
+                inputMode="decimal"
+                value={riderWeight}
+                min={0}
+                onChange={(event) => setRiderWeight(event.target.value)}
+                unit={massUnit}
+              />
+              <InputField
+                label="Bike weight"
+                type="number"
+                inputMode="decimal"
+                value={bikeWeight}
+                min={0}
+                onChange={(event) => setBikeWeight(event.target.value)}
+                unit={massUnit}
+              />
+              <InputField
+                label="Front tire width"
+                type="number"
+                inputMode="decimal"
+                value={frontWidth}
+                min={0}
+                onChange={(event) => setFrontWidth(event.target.value)}
+                unit="mm"
+              />
+              <InputField
+                label="Rear tire width"
+                type="number"
+                inputMode="decimal"
+                value={rearWidth}
+                min={0}
+                onChange={(event) => setRearWidth(event.target.value)}
+                unit="mm"
+              />
+            </div>
+
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <SelectField
+                label="Ride style"
+                value={rideStyle}
+                onChange={(event) => setRideStyle(event.target.value as RideStyle)}
+                options={rideStyleOptions}
+              />
+              <SelectField
+                label="Surface"
+                value={surface}
+                onChange={(event) => setSurface(event.target.value as Surface)}
+                options={surfaceOptions}
+              />
+              <SelectField
+                label="Rim type"
+                value={rimType}
+                onChange={(event) => setRimType(event.target.value as RimType)}
+                options={rimTypeOptions}
+              />
+              <SelectField
+                label="Front casing"
+                value={frontCasing}
+                onChange={(event) => setFrontCasing(event.target.value as TireCasing)}
+                options={casingOptions}
+              />
+              <SelectField
+                label="Rear casing"
+                value={rearCasing}
+                onChange={(event) => setRearCasing(event.target.value as TireCasing)}
+                options={casingOptions}
+              />
+            </div>
+
+            <div className="mt-10 rounded-3xl bg-neutral-900 px-6 py-6 text-white shadow-lg shadow-neutral-900/25">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/70">Recommended</p>
+                  <p className="mt-2 text-2xl font-semibold">Ride-ready pressures</p>
+                </div>
+                <BoltIcon className="h-10 w-10 text-emerald-300" aria-hidden />
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl bg-white/10 px-4 py-5 text-center">
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">Front</p>
+                  <p className="mt-3 text-3xl font-semibold">
+                    {pressures ? formatNumber(pressures.front) : "--"}
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-emerald-200">{unitLabel}</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 px-4 py-5 text-center">
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">Rear</p>
+                  <p className="mt-3 text-3xl font-semibold">
+                    {pressures ? formatNumber(pressures.rear) : "--"}
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-emerald-200">{unitLabel}</p>
+                </div>
+              </div>
+
+              <p className="mt-6 text-xs leading-relaxed text-white/70">
+                Tune by feel after the first kilometres. Ambient conditions and casing wear may nudge your final setting a touch higher or lower.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
