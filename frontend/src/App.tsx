@@ -9,6 +9,15 @@ type MassUnit = "kg" | "lbs";
 type RimType = "HOOKLESS" | "HOOKED" | "TUBULAR" | "TUBES";
 type TireCasing = "STANDARD" | "REINFORCED" | "THIN" | "DOWNHILL_CASING";
 
+const API_ENDPOINT =
+  import.meta.env.VITE_COMPUTE_URL ?? "http://127.0.0.1:8085/compute";
+
+interface ApiPressureResponse {
+  front_wheel: number;
+  rear_wheel: number;
+  unit: PressureUnits;
+}
+
 type Discipline =
   | "ROAD"
   | "GRAVEL"
@@ -56,142 +65,20 @@ function formatNumber(value: number) {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1);
 }
 
-function convertPressure(value: number, unit: PressureUnits) {
-  if (unit === "BAR") {
+function convertPressure(value: number, from: PressureUnits, to: PressureUnits) {
+  if (from === to) {
+    return value;
+  }
+
+  if (from === "PSI" && to === "BAR") {
     return value / 14.5038;
   }
+
+  if (from === "BAR" && to === "PSI") {
+    return value * 14.5038;
+  }
+
   return value;
-}
-
-function useCalculatedPressure(
-  params: {
-    riderWeight?: number;
-    bikeWeight?: number;
-    frontWidth?: number;
-    rearWidth?: number;
-    discipline?: Discipline;
-    surface?: Surface;
-    frontRimType?: RimType;
-    rearRimType?: RimType;
-    frontRimWidth?: number;
-    rearRimWidth?: number;
-    frontCasing?: TireCasing;
-    rearCasing?: TireCasing;
-  },
-  massUnit: MassUnit
-) {
-  const {
-    riderWeight,
-    bikeWeight,
-    frontWidth,
-    rearWidth,
-    discipline,
-    surface,
-    frontRimType,
-    rearRimType,
-    frontRimWidth,
-    rearRimWidth,
-    frontCasing,
-    rearCasing
-  } = params;
-
-  return useMemo(() => {
-    if (
-      !riderWeight ||
-      !frontWidth ||
-      !rearWidth ||
-      !discipline ||
-      !surface ||
-      !frontRimType ||
-      !rearRimType ||
-      !frontRimWidth ||
-      !rearRimWidth ||
-      !frontCasing ||
-      !rearCasing
-    ) {
-      return null;
-    }
-
-    const totalWeight = riderWeight + (bikeWeight ?? 0);
-    const weightKg = massUnit === "kg" ? totalWeight : totalWeight * 0.453592;
-
-    const base = 32 + weightKg * 0.18;
-
-    const styleAdjustments: Record<Discipline, number> = {
-      ROAD: 6,
-      GRAVEL: -2,
-      CYCLOCROSS: -4,
-      MTB_TRAIL: -10,
-      MTB_ENDURO: -11,
-      MTB_DOWNHILL: -14
-    };
-
-    const surfaceAdjustments: Record<Surface, number> = {
-      DRY: 0,
-      WET: -3,
-      MIXED: -1.5,
-      SNOW: -4
-    };
-
-    const rimAdjustments: Record<RimType, number> = {
-      HOOKLESS: -1,
-      HOOKED: 0,
-      TUBULAR: -4,
-      TUBES: 1
-    };
-
-    const casingAdjustments: Record<TireCasing, number> = {
-      STANDARD: 0,
-      THIN: -1,
-      REINFORCED: 1.5,
-      DOWNHILL_CASING: 3
-    };
-
-    const rimWidthReference = 25;
-    const rimWidthAdjustFront = (rimWidthReference - frontRimWidth) * 0.12;
-    const rimWidthAdjustRear = (rimWidthReference - rearRimWidth) * 0.12;
-
-    const widthDeltaFront = 30 - frontWidth;
-    const widthDeltaRear = 30 - rearWidth;
-
-    const front =
-      base +
-      widthDeltaFront * 0.22 +
-      (styleAdjustments[discipline] ?? 0) +
-      (surfaceAdjustments[surface] ?? 0) +
-      rimAdjustments[frontRimType] +
-      rimWidthAdjustFront +
-      casingAdjustments[frontCasing];
-
-    const rear =
-      base +
-      widthDeltaRear * 0.19 +
-      (styleAdjustments[discipline] ?? 0) +
-      (surfaceAdjustments[surface] ?? 0) +
-      rimAdjustments[rearRimType] +
-      rimWidthAdjustRear +
-      casingAdjustments[rearCasing] +
-      1.5;
-
-    return {
-      front: Math.max(12, Math.min(75, front)),
-      rear: Math.max(12, Math.min(78, rear))
-    } satisfies PressureResult;
-  }, [
-    bikeWeight,
-    discipline,
-    frontCasing,
-    frontRimType,
-    frontRimWidth,
-    frontWidth,
-    massUnit,
-    rearCasing,
-    rearRimType,
-    rearRimWidth,
-    rearWidth,
-    riderWeight,
-    surface
-  ]);
 }
 
 export default function App() {
@@ -199,79 +86,141 @@ export default function App() {
   const [pressureUnit, setPressureUnit] = useState<PressureUnits>("PSI");
   const [discipline, setDiscipline] = useState<Discipline | "">("");
   const [surface, setSurface] = useState<Surface | "">("");
-  const [frontRimType, setFrontRimType] = useState<RimType | "">("");
-  const [rearRimType, setRearRimType] = useState<RimType | "">("");
-  const [frontCasing, setFrontCasing] = useState<TireCasing | "">("");
-  const [rearCasing, setRearCasing] = useState<TireCasing | "">("");
+  const [rimType, setRimType] = useState<RimType | "">("");
+  const [tireCasing, setTireCasing] = useState<TireCasing | "">("");
 
   const [riderWeight, setRiderWeight] = useState("");
   const [bikeWeight, setBikeWeight] = useState("");
-  const [frontWidth, setFrontWidth] = useState("");
-  const [rearWidth, setRearWidth] = useState("");
-  const [frontRimWidth, setFrontRimWidth] = useState("");
-  const [rearRimWidth, setRearRimWidth] = useState("");
+  const [tireWidth, setTireWidth] = useState("");
+  const [rimWidth, setRimWidth] = useState("");
   const [showResults, setShowResults] = useState(false);
-
-  const calculated = useCalculatedPressure(
-    {
-      riderWeight: riderWeight ? parseFloat(riderWeight) : undefined,
-      bikeWeight: bikeWeight ? parseFloat(bikeWeight) : undefined,
-      frontWidth: frontWidth ? parseFloat(frontWidth) : undefined,
-      rearWidth: rearWidth ? parseFloat(rearWidth) : undefined,
-      discipline: discipline || undefined,
-      surface: surface || undefined,
-      frontRimType: frontRimType || undefined,
-      rearRimType: rearRimType || undefined,
-      frontRimWidth: frontRimWidth ? parseFloat(frontRimWidth) : undefined,
-      rearRimWidth: rearRimWidth ? parseFloat(rearRimWidth) : undefined,
-      frontCasing: frontCasing || undefined,
-      rearCasing: rearCasing || undefined
-    },
-    massUnit
-  );
+  const [apiResult, setApiResult] = useState<ApiPressureResponse | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const pressures = useMemo(() => {
-    if (!calculated) return null;
+    if (!apiResult) return null;
 
     return {
-      front: convertPressure(calculated.front, pressureUnit),
-      rear: convertPressure(calculated.rear, pressureUnit)
-    };
-  }, [calculated, pressureUnit]);
+      front: convertPressure(apiResult.front_wheel, apiResult.unit, pressureUnit),
+      rear: convertPressure(apiResult.rear_wheel, apiResult.unit, pressureUnit)
+    } satisfies PressureResult;
+  }, [apiResult, pressureUnit]);
 
   const unitLabel = pressureUnit === "PSI" ? "psi" : "bar";
+
+  const clearResults = () => {
+    setShowResults(false);
+    setApiResult(null);
+    setErrorMessage(null);
+  };
 
   const handleReset = () => {
     setDiscipline("");
     setSurface("");
-    setFrontRimType("");
-    setRearRimType("");
-    setFrontCasing("");
-    setRearCasing("");
+    setRimType("");
+    setTireCasing("");
     setRiderWeight("");
     setBikeWeight("");
-    setFrontWidth("");
-    setRearWidth("");
-    setFrontRimWidth("");
-    setRearRimWidth("");
+    setTireWidth("");
+    setRimWidth("");
     setMassUnit("kg");
     setPressureUnit("PSI");
-    setShowResults(false);
+    setIsCalculating(false);
+    clearResults();
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!readyToCalculate || isCalculating) {
+      setShowResults(false);
+      return;
+    }
+
+    setIsCalculating(true);
+    setErrorMessage(null);
+
+    const riderWeightValue = parseFloat(riderWeight);
+    const bikeWeightValue = parseFloat(bikeWeight);
+    const tireWidthValue = parseFloat(tireWidth);
+    const rimWidthValue = parseFloat(rimWidth);
+
+    const riderWeightKg =
+      massUnit === "kg" ? riderWeightValue : riderWeightValue * 0.453592;
+    const bikeWeightKg =
+      massUnit === "kg" ? bikeWeightValue : bikeWeightValue * 0.453592;
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          bike: {
+            name: "Custom setup",
+            discipline: discipline as Discipline,
+            front_tire: {
+              width: tireWidthValue,
+              position: "FRONT",
+              casing: tireCasing as TireCasing,
+              unit: "MM"
+            },
+            front_wheel: {
+              rim_width: rimWidthValue,
+              rim_type: rimType as RimType,
+              position: "FRONT",
+              diameter: "700C"
+            },
+            rear_tire: {
+              width: tireWidthValue,
+              position: "REAR",
+              casing: tireCasing as TireCasing,
+              unit: "MM"
+            },
+            rear_wheel: {
+              rim_width: rimWidthValue,
+              rim_type: rimType as RimType,
+              position: "REAR",
+              diameter: "700C"
+            },
+            weight: {
+              value: bikeWeightKg,
+              unit: "kg"
+            }
+          },
+          rider_weight: {
+            value: riderWeightKg,
+            unit: "kg"
+          },
+          surface: surface as Surface
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch tire pressure recommendations");
+      }
+
+      const data: ApiPressureResponse = await response.json();
+      setApiResult(data);
+      setShowResults(true);
+    } catch (error) {
+      console.error(error);
+      setApiResult(null);
+      setShowResults(false);
+      setErrorMessage("We couldn't fetch recommendations right now. Please try again.");
+    } finally {
+      setIsCalculating(false);
+    }
   };
 
   const weightComplete = Boolean(parseFloat(riderWeight)) && Boolean(parseFloat(bikeWeight));
   const disciplineComplete = Boolean(discipline);
   const surfaceComplete = Boolean(surface);
-  const rimsComplete =
-    Boolean(frontRimType) &&
-    Boolean(rearRimType) &&
-    Boolean(parseFloat(frontRimWidth)) &&
-    Boolean(parseFloat(rearRimWidth));
-  const tireComplete =
-    Boolean(parseFloat(frontWidth)) &&
-    Boolean(parseFloat(rearWidth)) &&
-    Boolean(frontCasing) &&
-    Boolean(rearCasing);
+  const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth));
+  const tireComplete = Boolean(parseFloat(tireWidth)) && Boolean(tireCasing);
 
   const progressSteps = [
     { label: "Weight", complete: weightComplete },
@@ -284,6 +233,7 @@ export default function App() {
   const completedSteps = progressSteps.filter((step) => step.complete).length;
   const progressPercent = Math.round((completedSteps / progressSteps.length) * 100);
   const readyToCalculate = progressPercent === 100;
+  const canSubmit = readyToCalculate && !isCalculating;
 
   return (
     <div className="min-h-screen bg-violet-50 text-neutral-900">
@@ -315,7 +265,7 @@ export default function App() {
                     value={massUnit}
                     onChange={(value) => {
                       setMassUnit(value);
-                      setShowResults(false);
+                      clearResults();
                     }}
                     options={[
                       { label: "kg", value: "kg" },
@@ -326,7 +276,6 @@ export default function App() {
                     value={pressureUnit}
                     onChange={(value) => {
                       setPressureUnit(value);
-                      setShowResults(false);
                     }}
                     options={[
                       { label: "psi", value: "PSI" },
@@ -363,19 +312,8 @@ export default function App() {
                 </div>
               </div>
 
-              <form
-                id="setup-form"
-                className="space-y-10"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  if (!readyToCalculate) {
-                    setShowResults(false);
-                    return;
-                  }
-                  setShowResults(true);
-                }}
-              >
-                <div className="space-y-4">
+              <form id="setup-form" className="space-y-10" onSubmit={handleSubmit}>
+                <section className="space-y-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Weight</p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <InputField
@@ -386,7 +324,7 @@ export default function App() {
                       min={0}
                       onChange={(event) => {
                         setRiderWeight(event.target.value);
-                        setShowResults(false);
+                        clearResults();
                       }}
                       unit={massUnit}
                     />
@@ -398,14 +336,16 @@ export default function App() {
                       min={0}
                       onChange={(event) => {
                         setBikeWeight(event.target.value);
-                        setShowResults(false);
+                        clearResults();
                       }}
                       unit={massUnit}
                     />
                   </div>
-                </div>
+                </section>
 
-                <div className="space-y-4">
+                <hr className="border-purple-100/70" />
+
+                <section className="space-y-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Discipline</p>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {disciplineOptions.map((option) => (
@@ -414,7 +354,7 @@ export default function App() {
                         type="button"
                         onClick={() => {
                           setDiscipline(option.value);
-                          setShowResults(false);
+                          clearResults();
                         }}
                         className={clsx(
                           "rounded-lg border border-purple-100 bg-white px-4 py-3 text-sm font-semibold text-left transition",
@@ -427,9 +367,11 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                <div className="space-y-4">
+                <hr className="border-purple-100/70" />
+
+                <section className="space-y-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Surface</p>
                   <div className="flex flex-wrap gap-2">
                     {surfaceOptions.map((option) => (
@@ -438,7 +380,7 @@ export default function App() {
                         type="button"
                         onClick={() => {
                           setSurface(option.value);
-                          setShowResults(false);
+                          clearResults();
                         }}
                         className={clsx(
                           "rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
@@ -451,113 +393,127 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                <div className="grid gap-10 lg:grid-cols-2">
-                  <div className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Front rims</p>
-                    <SelectField
-                      label="Front rim type"
-                      value={frontRimType}
-                      placeholder="Select rim type"
-                      onChange={(event) => {
-                        setFrontRimType(event.target.value as RimType | "");
-                        setShowResults(false);
-                      }}
-                      options={rimTypeOptions}
-                    />
-                    <InputField
-                      label="Rim width"
-                      type="number"
-                      inputMode="decimal"
-                      value={frontRimWidth}
-                      min={0}
-                      onChange={(event) => {
-                        setFrontRimWidth(event.target.value);
-                        setShowResults(false);
-                      }}
-                      unit="mm"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rear rims</p>
-                    <SelectField
-                      label="Rear rim type"
-                      value={rearRimType}
-                      placeholder="Select rim type"
-                      onChange={(event) => {
-                        setRearRimType(event.target.value as RimType | "");
-                        setShowResults(false);
-                      }}
-                      options={rimTypeOptions}
-                    />
-                    <InputField
-                      label="Rim width"
-                      type="number"
-                      inputMode="decimal"
-                      value={rearRimWidth}
-                      min={0}
-                      onChange={(event) => {
-                        setRearRimWidth(event.target.value);
-                        setShowResults(false);
-                      }}
-                      unit="mm"
-                    />
-                  </div>
-                </div>
+                <hr className="border-purple-100/70" />
 
-                <div className="grid gap-10 lg:grid-cols-2">
-                  <div className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Front tire</p>
-                    <InputField
-                      label="Width"
-                      type="number"
-                      inputMode="decimal"
-                      value={frontWidth}
-                      min={0}
-                      onChange={(event) => {
-                        setFrontWidth(event.target.value);
-                        setShowResults(false);
-                      }}
-                      unit="mm"
-                    />
-                    <SelectField
-                      label="Casing"
-                      value={frontCasing}
-                      placeholder="Select casing"
-                      onChange={(event) => {
-                        setFrontCasing(event.target.value as TireCasing | "");
-                        setShowResults(false);
-                      }}
-                      options={casingOptions}
-                    />
+                <section className="space-y-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rims</p>
+                  <div className="grid gap-8 lg:grid-cols-2">
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
+                      <SelectField
+                        label="Rim type"
+                        value={rimType}
+                        placeholder="Select rim type"
+                        onChange={(event) => {
+                          setRimType(event.target.value as RimType | "");
+                          clearResults();
+                        }}
+                        options={rimTypeOptions}
+                      />
+                      <InputField
+                        label="Rim width"
+                        type="number"
+                        inputMode="decimal"
+                        value={rimWidth}
+                        min={0}
+                        onChange={(event) => {
+                          setRimWidth(event.target.value);
+                          clearResults();
+                        }}
+                        unit="mm"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+                      <SelectField
+                        label="Rim type"
+                        value={rimType}
+                        placeholder="Select rim type"
+                        helper="Mirrors front selection"
+                        onChange={(event) => {
+                          setRimType(event.target.value as RimType | "");
+                          clearResults();
+                        }}
+                        options={rimTypeOptions}
+                      />
+                      <InputField
+                        label="Rim width"
+                        type="number"
+                        inputMode="decimal"
+                        value={rimWidth}
+                        min={0}
+                        helper="Synced with front"
+                        onChange={(event) => {
+                          setRimWidth(event.target.value);
+                          clearResults();
+                        }}
+                        unit="mm"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Rear tire</p>
-                    <InputField
-                      label="Width"
-                      type="number"
-                      inputMode="decimal"
-                      value={rearWidth}
-                      min={0}
-                      onChange={(event) => {
-                        setRearWidth(event.target.value);
-                        setShowResults(false);
-                      }}
-                      unit="mm"
-                    />
-                    <SelectField
-                      label="Casing"
-                      value={rearCasing}
-                      placeholder="Select casing"
-                      onChange={(event) => {
-                        setRearCasing(event.target.value as TireCasing | "");
-                        setShowResults(false);
-                      }}
-                      options={casingOptions}
-                    />
+                </section>
+
+                <hr className="border-purple-100/70" />
+
+                <section className="space-y-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">Tires</p>
+                  <div className="grid gap-8 lg:grid-cols-2">
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
+                      <InputField
+                        label="Width"
+                        type="number"
+                        inputMode="decimal"
+                        value={tireWidth}
+                        min={0}
+                        onChange={(event) => {
+                          setTireWidth(event.target.value);
+                          clearResults();
+                        }}
+                        unit="mm"
+                      />
+                      <SelectField
+                        label="Casing"
+                        value={tireCasing}
+                        placeholder="Select casing"
+                        onChange={(event) => {
+                          setTireCasing(event.target.value as TireCasing | "");
+                          clearResults();
+                        }}
+                        options={casingOptions}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+                      <InputField
+                        label="Width"
+                        type="number"
+                        inputMode="decimal"
+                        value={tireWidth}
+                        min={0}
+                        helper="Synced with front"
+                        onChange={(event) => {
+                          setTireWidth(event.target.value);
+                          clearResults();
+                        }}
+                        unit="mm"
+                      />
+                      <SelectField
+                        label="Casing"
+                        value={tireCasing}
+                        placeholder="Select casing"
+                        helper="Mirrors front selection"
+                        onChange={(event) => {
+                          setTireCasing(event.target.value as TireCasing | "");
+                          clearResults();
+                        }}
+                        options={casingOptions}
+                      />
+                    </div>
                   </div>
-                </div>
+                </section>
               </form>
             </div>
           </section>
@@ -586,6 +542,44 @@ export default function App() {
                   <p className="text-sm font-medium text-white/50">{unitLabel}</p>
                 </div>
               </div>
+              <div className="mt-6 text-sm">
+                {isCalculating ? (
+                  <p className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center text-purple-100/90">
+                    Crunching the numbers…
+                  </p>
+                ) : errorMessage ? (
+                  <p className="rounded-2xl border border-white/10 bg-rose-500/20 px-4 py-3 text-center font-medium text-rose-100">
+                    {errorMessage}
+                  </p>
+                ) : !showResults ? (
+                  <p className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/70">
+                    Complete the setup and calculate to unlock your pressures.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="submit"
+                form="setup-form"
+                disabled={!canSubmit}
+                className={clsx(
+                  "w-full rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition sm:flex-1",
+                  canSubmit
+                    ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
+                    : "cursor-not-allowed bg-purple-100 text-purple-400"
+                )}
+              >
+                {isCalculating ? "CALCULATING…" : "CALCULATE"}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto sm:flex-none"
+              >
+                RESET
+              </button>
             </div>
 
             <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
@@ -604,29 +598,6 @@ export default function App() {
                   Adjust ±1 {unitLabel} to tune comfort once you sample the day’s terrain.
                 </li>
               </ul>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                type="submit"
-                form="setup-form"
-                disabled={!readyToCalculate}
-                className={clsx(
-                  "flex-1 rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] transition sm:min-w-[220px]",
-                  readyToCalculate
-                    ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                    : "cursor-not-allowed bg-purple-100 text-purple-400"
-                )}
-              >
-                CALCULATE
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="inline-flex items-center justify-center rounded-full border border-purple-200 bg-white/70 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
-              >
-                RESET
-              </button>
             </div>
           </aside>
         </div>
