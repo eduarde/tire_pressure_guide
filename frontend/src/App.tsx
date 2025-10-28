@@ -24,6 +24,7 @@ type MassUnit = "kg" | "lbs";
 type RimType = "HOOKLESS" | "HOOKED" | "TUBULAR" | "TUBES";
 type TireCasing = "STANDARD" | "REINFORCED" | "THIN" | "DOWNHILL_CASING";
 type WidthUnit = "MM" | "IN";
+type WheelDiameter = "650C" | "650B" | "700C" | "26" | "27.5" | "29";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8088";
 const API_ENDPOINT = `${API_BASE_URL}/compute`;
@@ -75,9 +76,21 @@ const rimTypeOptions: { value: RimType; label: string }[] = [
 
 const casingOptions: { value: TireCasing; label: string }[] = [
   { value: "STANDARD", label: "Standard" },
-  { value: "THIN", label: "Supple" },
+  { value: "THIN", label: "Thin" },
   { value: "REINFORCED", label: "Reinforced" },
   { value: "DOWNHILL_CASING", label: "Downhill" }
+];
+
+const roadDiameterOptions: { value: WheelDiameter; label: string }[] = [
+  { value: "650C", label: "650C" },
+  { value: "650B", label: "650B" },
+  { value: "700C", label: "700C" }
+];
+
+const mtbDiameterOptions: { value: WheelDiameter; label: string }[] = [
+  { value: "26", label: "26\"" },
+  { value: "27.5", label: "27.5\"" },
+  { value: "29", label: "29\"" }
 ];
 
 function formatNumber(value: number) {
@@ -107,6 +120,8 @@ export default function App() {
   const [surface, setSurface] = useState<Surface | "">("");
   const [rimType, setRimType] = useState<RimType | "">("");
   const [rearRimType, setRearRimType] = useState<RimType | "">("");
+  const [wheelDiameter, setWheelDiameter] = useState<WheelDiameter | "">("");
+  const [rearWheelDiameter, setRearWheelDiameter] = useState<WheelDiameter | "">("");
   const [tireCasing, setTireCasing] = useState<TireCasing | "">("");
   const [rearTireCasing, setRearTireCasing] = useState<TireCasing | "">("");
 
@@ -131,6 +146,13 @@ export default function App() {
     } satisfies PressureResult;
   }, [apiResult, pressureUnit]);
 
+  const diameterOptions = useMemo(() => {
+    if (!discipline) return roadDiameterOptions;
+    return ["MTB_XC", "MTB_TRAIL", "MTB_ENDURO", "MTB_DOWNHILL"].includes(discipline)
+      ? mtbDiameterOptions
+      : roadDiameterOptions;
+  }, [discipline]);
+
   const widthUnit: WidthUnit = useMemo(() => {
     if (!discipline) return "MM";
     return ["MTB_XC", "MTB_TRAIL", "MTB_ENDURO", "MTB_DOWNHILL"].includes(discipline)
@@ -151,6 +173,8 @@ export default function App() {
     setSurface("");
     setRimType("");
     setRearRimType("");
+    setWheelDiameter("");
+    setRearWheelDiameter("");
     setTireCasing("");
     setRearTireCasing("");
     setRiderWeight("");
@@ -214,7 +238,7 @@ export default function App() {
               rim_width: rimWidthValue,
               rim_type: rimType as RimType,
               position: "FRONT",
-              diameter: "700C"
+              diameter: wheelDiameter as WheelDiameter
             },
             rear_tire: {
               width: rearTireWidthMm,
@@ -226,7 +250,7 @@ export default function App() {
               rim_width: rearRimWidthValue,
               rim_type: rearRimType as RimType,
               position: "REAR",
-              diameter: "700C"
+              diameter: rearWheelDiameter as WheelDiameter
             },
             weight: {
               value: bikeWeightKg,
@@ -261,7 +285,7 @@ export default function App() {
   const disciplineComplete = Boolean(discipline);
   const surfaceComplete = Boolean(surface);
   const weightComplete = Boolean(parseFloat(riderWeight)) && Boolean(parseFloat(bikeWeight));
-  const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth)) && Boolean(rearRimType) && Boolean(parseFloat(rearRimWidth));
+  const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth)) && Boolean(wheelDiameter) && Boolean(rearRimType) && Boolean(parseFloat(rearRimWidth)) && Boolean(rearWheelDiameter);
   const tireComplete = Boolean(parseFloat(tireWidth)) && Boolean(tireCasing) && Boolean(parseFloat(rearTireWidth)) && Boolean(rearTireCasing);
 
   type StepConfig = {
@@ -377,6 +401,20 @@ export default function App() {
             <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
             <div className="max-w-[180px]">
               <SelectField
+                label="Diameter"
+                value={wheelDiameter}
+                placeholder="Select diameter"
+                onChange={(event) => {
+                  const value = event.target.value as WheelDiameter | "";
+                  setWheelDiameter(value);
+                  setRearWheelDiameter(value); // Sync rear with front
+                  clearResults();
+                }}
+                options={diameterOptions}
+              />
+            </div>
+            <div className="max-w-[180px]">
+              <SelectField
                 label="Type"
                 value={rimType}
                 placeholder="Select type"
@@ -406,6 +444,18 @@ export default function App() {
           </div>
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+            <div className="max-w-[180px]">
+              <SelectField
+                label="Diameter"
+                value={rearWheelDiameter}
+                placeholder="Select diameter"
+                onChange={(event) => {
+                  setRearWheelDiameter(event.target.value as WheelDiameter | "");
+                  clearResults();
+                }}
+                options={diameterOptions}
+              />
+            </div>
             <div className="max-w-[180px]">
               <SelectField
                 label="Type"
@@ -567,7 +617,7 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="grid gap-14 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
-            <section className="cartoon-card flex h-[480px] flex-col bg-white/95 p-8">
+            <section className="cartoon-card flex h-[550px] flex-col bg-white/95 p-8">
               <div className="flex-1 space-y-8 overflow-y-auto">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -722,7 +772,7 @@ export default function App() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="cartoon-card cartoon-card--contrast flex h-[480px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
+            <div className="cartoon-card cartoon-card--contrast flex h-[470px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-200/80">Tire pressure</p>
