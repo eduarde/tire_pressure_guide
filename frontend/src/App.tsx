@@ -3,12 +3,31 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 import { InputField, SelectField, SegmentedControl } from "./components";
 import { BoltIcon } from "@heroicons/react/24/outline";
+import { 
+  SunIcon, 
+  CloudIcon as CloudIconRain,
+} from "@heroicons/react/24/solid";
+import { CloudIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+
+// Custom SVG icons for weather
+const UmbrellaIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h18M3 12a9 9 0 0118 0M12 12v7m0 0a2 2 0 104 0" />
+  </svg>
+);
+
+const SnowflakeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M3 12h18M6.34 6.34l11.32 11.32M6.34 17.66L17.66 6.34M9 3l3 3m0 0l3-3M9 21l3-3m0 0l3 3M3 9l3 3m0 0l-3 3M21 9l-3 3m0 0l3 3" />
+  </svg>
+);
 
 type Surface = "DRY" | "WET" | "MIXED" | "SNOW";
 type PressureUnits = "PSI" | "BAR";
 type MassUnit = "kg" | "lbs";
 type RimType = "HOOKLESS" | "HOOKED" | "TUBULAR" | "TUBES";
 type TireCasing = "STANDARD" | "REINFORCED" | "THIN" | "DOWNHILL_CASING";
+type WidthUnit = "MM" | "IN";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8088";
 const API_ENDPOINT = `${API_BASE_URL}/compute`;
@@ -24,6 +43,7 @@ type Discipline =
   | "ROAD"
   | "GRAVEL"
   | "CYCLOCROSS"
+  | "MTB_XC"
   | "MTB_TRAIL"
   | "MTB_ENDURO"
   | "MTB_DOWNHILL";
@@ -37,16 +57,17 @@ const disciplineOptions: { value: Discipline; label: string }[] = [
   { value: "ROAD", label: "Road" },
   { value: "GRAVEL", label: "Gravel" },
   { value: "CYCLOCROSS", label: "Cyclocross" },
+  { value: "MTB_XC", label: "XC" },
   { value: "MTB_TRAIL", label: "Trail" },
   { value: "MTB_ENDURO", label: "Enduro" },
   { value: "MTB_DOWNHILL", label: "Downhill" }
 ];
 
-const surfaceOptions: { value: Surface; label: string }[] = [
-  { value: "DRY", label: "Dry" },
-  { value: "WET", label: "Wet" },
-  { value: "MIXED", label: "Mixed" },
-  { value: "SNOW", label: "Snow" }
+const surfaceOptions: { value: Surface; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { value: "DRY", label: "Dry", icon: SunIcon },
+  { value: "WET", label: "Wet", icon: UmbrellaIcon },
+  { value: "MIXED", label: "Mixed", icon: CloudIcon },
+  { value: "SNOW", label: "Snow", icon: SnowflakeIcon }
 ];
 
 const rimTypeOptions: { value: RimType; label: string }[] = [
@@ -89,12 +110,16 @@ export default function App() {
   const [discipline, setDiscipline] = useState<Discipline | "">("");
   const [surface, setSurface] = useState<Surface | "">("");
   const [rimType, setRimType] = useState<RimType | "">("");
+  const [rearRimType, setRearRimType] = useState<RimType | "">("");
   const [tireCasing, setTireCasing] = useState<TireCasing | "">("");
+  const [rearTireCasing, setRearTireCasing] = useState<TireCasing | "">("");
 
   const [riderWeight, setRiderWeight] = useState("");
   const [bikeWeight, setBikeWeight] = useState("");
   const [tireWidth, setTireWidth] = useState("");
+  const [rearTireWidth, setRearTireWidth] = useState("");
   const [rimWidth, setRimWidth] = useState("");
+  const [rearRimWidth, setRearRimWidth] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [apiResult, setApiResult] = useState<ApiPressureResponse | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -110,6 +135,13 @@ export default function App() {
     } satisfies PressureResult;
   }, [apiResult, pressureUnit]);
 
+  const widthUnit: WidthUnit = useMemo(() => {
+    if (!discipline) return "MM";
+    return ["MTB_XC", "MTB_TRAIL", "MTB_ENDURO", "MTB_DOWNHILL"].includes(discipline)
+      ? "IN"
+      : "MM";
+  }, [discipline]);
+
   const unitLabel = pressureUnit === "PSI" ? "psi" : "bar";
 
   const clearResults = () => {
@@ -122,11 +154,15 @@ export default function App() {
     setDiscipline("");
     setSurface("");
     setRimType("");
+    setRearRimType("");
     setTireCasing("");
+    setRearTireCasing("");
     setRiderWeight("");
     setBikeWeight("");
     setTireWidth("");
+    setRearTireWidth("");
     setRimWidth("");
+    setRearRimWidth("");
     setMassUnit("kg");
     setPressureUnit("PSI");
     setIsCalculating(false);
@@ -148,12 +184,18 @@ export default function App() {
     const riderWeightValue = parseFloat(riderWeight);
     const bikeWeightValue = parseFloat(bikeWeight);
     const tireWidthValue = parseFloat(tireWidth);
+    const rearTireWidthValue = parseFloat(rearTireWidth);
     const rimWidthValue = parseFloat(rimWidth);
+    const rearRimWidthValue = parseFloat(rearRimWidth);
 
     const riderWeightKg =
       massUnit === "kg" ? riderWeightValue : riderWeightValue * 0.453592;
     const bikeWeightKg =
       massUnit === "kg" ? bikeWeightValue : bikeWeightValue * 0.453592;
+
+    // Convert tire widths to mm if in inches
+    const frontTireWidthMm = widthUnit === "IN" ? tireWidthValue * 25.4 : tireWidthValue;
+    const rearTireWidthMm = widthUnit === "IN" ? rearTireWidthValue * 25.4 : rearTireWidthValue;
 
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -167,7 +209,7 @@ export default function App() {
             name: "Custom setup",
             discipline: discipline as Discipline,
             front_tire: {
-              width: tireWidthValue,
+              width: frontTireWidthMm,
               position: "FRONT",
               casing: tireCasing as TireCasing,
               unit: "MM"
@@ -179,14 +221,14 @@ export default function App() {
               diameter: "700C"
             },
             rear_tire: {
-              width: tireWidthValue,
+              width: rearTireWidthMm,
               position: "REAR",
-              casing: tireCasing as TireCasing,
+              casing: rearTireCasing as TireCasing,
               unit: "MM"
             },
             rear_wheel: {
-              rim_width: rimWidthValue,
-              rim_type: rimType as RimType,
+              rim_width: rearRimWidthValue,
+              rim_type: rearRimType as RimType,
               position: "REAR",
               diameter: "700C"
             },
@@ -223,8 +265,8 @@ export default function App() {
   const disciplineComplete = Boolean(discipline);
   const surfaceComplete = Boolean(surface);
   const weightComplete = Boolean(parseFloat(riderWeight)) && Boolean(parseFloat(bikeWeight));
-  const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth));
-  const tireComplete = Boolean(parseFloat(tireWidth)) && Boolean(tireCasing);
+  const rimsComplete = Boolean(rimType) && Boolean(parseFloat(rimWidth)) && Boolean(rearRimType) && Boolean(parseFloat(rearRimWidth));
+  const tireComplete = Boolean(parseFloat(tireWidth)) && Boolean(tireCasing) && Boolean(parseFloat(rearTireWidth)) && Boolean(rearTireCasing);
 
   type StepConfig = {
     key: string;
@@ -267,24 +309,28 @@ export default function App() {
       complete: surfaceComplete,
       content: (
         <div className="flex flex-wrap gap-2">
-          {surfaceOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                setSurface(option.value);
-                clearResults();
-              }}
-              className={clsx(
-                "rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
-                surface === option.value
-                  ? "border-purple-500 bg-purple-500 text-white shadow-sm"
-                  : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
+          {surfaceOptions.map((option) => {
+            const Icon = option.icon;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setSurface(option.value);
+                  clearResults();
+                }}
+                className={clsx(
+                  "flex items-center gap-2 rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
+                  surface === option.value
+                    ? "border-purple-500 bg-purple-100 text-purple-700 shadow-sm"
+                    : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {option.label}
+              </button>
+            );
+          })}
         </div>
       )
     },
@@ -334,7 +380,9 @@ export default function App() {
               value={rimType}
               placeholder="Select rim type"
               onChange={(event) => {
-                setRimType(event.target.value as RimType | "");
+                const value = event.target.value as RimType | "";
+                setRimType(value);
+                setRearRimType(value); // Sync rear with front
                 clearResults();
               }}
               options={rimTypeOptions}
@@ -347,6 +395,7 @@ export default function App() {
               min={0}
               onChange={(event) => {
                 setRimWidth(event.target.value);
+                setRearRimWidth(event.target.value); // Sync rear with front
                 clearResults();
               }}
               unit="mm"
@@ -356,11 +405,10 @@ export default function App() {
             <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
             <SelectField
               label="Rim type"
-              value={rimType}
+              value={rearRimType}
               placeholder="Select rim type"
-              helper="Mirrors front selection"
               onChange={(event) => {
-                setRimType(event.target.value as RimType | "");
+                setRearRimType(event.target.value as RimType | "");
                 clearResults();
               }}
               options={rimTypeOptions}
@@ -369,11 +417,10 @@ export default function App() {
               label="Rim width"
               type="number"
               inputMode="decimal"
-              value={rimWidth}
+              value={rearRimWidth}
               min={0}
-              helper="Synced with front"
               onChange={(event) => {
-                setRimWidth(event.target.value);
+                setRearRimWidth(event.target.value);
                 clearResults();
               }}
               unit="mm"
@@ -396,18 +443,22 @@ export default function App() {
               inputMode="decimal"
               value={tireWidth}
               min={0}
+              step="any"
               onChange={(event) => {
                 setTireWidth(event.target.value);
+                setRearTireWidth(event.target.value); // Sync rear with front
                 clearResults();
               }}
-              unit="mm"
+              unit={widthUnit === "IN" ? "in" : "mm"}
             />
             <SelectField
               label="Casing"
               value={tireCasing}
               placeholder="Select casing"
               onChange={(event) => {
-                setTireCasing(event.target.value as TireCasing | "");
+                const value = event.target.value as TireCasing | "";
+                setTireCasing(value);
+                setRearTireCasing(value); // Sync rear with front
                 clearResults();
               }}
               options={casingOptions}
@@ -419,22 +470,21 @@ export default function App() {
               label="Width"
               type="number"
               inputMode="decimal"
-              value={tireWidth}
+              value={rearTireWidth}
               min={0}
-              helper="Synced with front"
+              step="any"
               onChange={(event) => {
-                setTireWidth(event.target.value);
+                setRearTireWidth(event.target.value);
                 clearResults();
               }}
-              unit="mm"
+              unit={widthUnit === "IN" ? "in" : "mm"}
             />
             <SelectField
               label="Casing"
-              value={tireCasing}
+              value={rearTireCasing}
               placeholder="Select casing"
-              helper="Mirrors front selection"
               onChange={(event) => {
-                setTireCasing(event.target.value as TireCasing | "");
+                setRearTireCasing(event.target.value as TireCasing | "");
                 clearResults();
               }}
               options={casingOptions}
@@ -657,11 +707,15 @@ export default function App() {
                   <p className="rounded-2xl border border-white/10 bg-rose-500/20 px-4 py-3 text-center font-medium text-rose-100">
                     {errorMessage}
                   </p>
-                ) : !showResults ? (
+                ) : showResults ? (
+                  <p className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/70">
+                    Further adjustments are recommended to fine-tune performance for your specific setup and riding conditions.
+                  </p>
+                ) : (
                   <p className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/70">
                     Complete the setup and calculate to unlock your pressures.
                   </p>
-                ) : null}
+                )}
               </div>
             </div>
 
@@ -669,10 +723,6 @@ export default function App() {
             <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
               <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
               <ul className="mt-4 space-y-3 text-sm text-neutral-600">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
-                  Further adjustment is advised to optimize performance for your specific configuration and conditions.
-                </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
                   Balance grip and speed by letting the front run slightly lower than the rear.
