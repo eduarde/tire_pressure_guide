@@ -16,7 +16,7 @@ export function InputField({ label, helper, unit, className, containerClassName,
         <input
           {...props}
           className={clsx(
-            compact ? "w-[182px]" : "flex-1",
+            compact ? "w-[182px]" : className?.includes('w-') ? "" : "flex-1",
             "rounded-xl border-2 border-neutral-900 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-[4px_4px_0_rgba(17,24,39,0.1)]",
             "placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-0",
             className

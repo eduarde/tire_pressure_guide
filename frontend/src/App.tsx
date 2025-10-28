@@ -360,34 +360,32 @@ export default function App() {
       complete: weightComplete,
       content: (
         <div className="flex flex-col gap-4">
-          <div className="max-w-[200px]">
-            <InputField
-              label="Rider weight"
-              type="number"
-              inputMode="decimal"
-              value={riderWeight}
-              min={0}
-              onChange={(event) => {
-                setRiderWeight(event.target.value);
-                clearResults();
-              }}
-              unit={massUnit}
-            />
-          </div>
-          <div className="max-w-[200px]">
-            <InputField
-              label="Bike weight"
-              type="number"
-              inputMode="decimal"
-              value={bikeWeight}
-              min={0}
-              onChange={(event) => {
-                setBikeWeight(event.target.value);
-                clearResults();
-              }}
-              unit={massUnit}
-            />
-          </div>
+          <InputField
+            label="Rider weight"
+            type="number"
+            inputMode="decimal"
+            value={riderWeight}
+            min={0}
+            onChange={(event) => {
+              setRiderWeight(event.target.value);
+              clearResults();
+            }}
+            unit={massUnit}
+            className="w-[140px] sm:w-[200px]"
+          />
+          <InputField
+            label="Bike weight"
+            type="number"
+            inputMode="decimal"
+            value={bikeWeight}
+            min={0}
+            onChange={(event) => {
+              setBikeWeight(event.target.value);
+              clearResults();
+            }}
+            unit={massUnit}
+            className="w-[140px] sm:w-[200px]"
+          />
         </div>
       )
     },
@@ -617,8 +615,8 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="grid gap-14 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
-            <section className="cartoon-card flex min-h-[550px] flex-col bg-white/95 p-8 lg:h-[550px]">
-              <div className="flex-1 space-y-8 overflow-y-auto">
+            <section className="cartoon-card flex min-h-[570px] flex-col bg-white/95 p-8 lg:h-[570px]">
+              <div className="flex-1 space-y-8 overflow-x-hidden overflow-y-auto">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.3em] text-neutral-800">Setup progress</p>
@@ -689,11 +687,17 @@ export default function App() {
                       );
                     })}
                   </div>
-                  <div className="hidden gap-3 text-[0.7rem] font-black uppercase tracking-[0.28em] text-neutral-500 sm:grid sm:grid-cols-5">
-                    {progressSteps.map((step) => (
-                      <span key={`${step.label}-label`} className="text-center sm:text-left">
+                  <div className="hidden gap-2 sm:flex">
+                    {progressSteps.map((step, index) => (
+                      <div
+                        key={`${step.label}-label`}
+                        className={clsx(
+                          "text-[0.7rem] font-black uppercase tracking-[0.28em] text-neutral-500",
+                          index < progressSteps.length - 1 ? "flex-1" : "flex-none w-10"
+                        )}
+                      >
                         {step.label}
-                      </span>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -772,7 +776,7 @@ export default function App() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="cartoon-card cartoon-card--contrast flex h-[470px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-6 text-white sm:p-8">
+            <div className="cartoon-card cartoon-card--contrast flex h-[480px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-6 text-white sm:p-8">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-200/80">Tire pressure</p>
@@ -841,7 +845,7 @@ export default function App() {
       <footer className="border-t-4 border-neutral-900 bg-white py-8">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-10">
           <p className="flex items-center justify-center gap-2 text-sm text-neutral-600">
-            Made with <HeartIcon className="h-4 w-4 text-red-500" aria-label="love" /> by{" "}
+            Crafted with <HeartIcon className="h-4 w-4 text-green-500" aria-label="love" /> by{" "}
             <a
               href="https://eduarde.github.io"
               target="_blank"
