@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useState, useEffect } from "react";
 
 interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -8,13 +9,45 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   compact?: boolean;
 }
 
-export function InputField({ label, helper, unit, className, containerClassName, compact, ...props }: InputFieldProps) {
+export function InputField({ label, helper, unit, className, containerClassName, compact, value, onChange, ...props }: InputFieldProps) {
+  const [displayValue, setDisplayValue] = useState(value?.toString() || "");
+
+  // Sync displayValue with external value changes
+  useEffect(() => {
+    setDisplayValue(value?.toString() || "");
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let inputValue = e.target.value;
+    
+    // Replace comma with period for decimal input
+    inputValue = inputValue.replace(/,/g, '.');
+    
+    // Only allow valid number patterns (digits, one decimal point, optional minus at start)
+    if (inputValue === '' || inputValue === '-' || /^-?\d*\.?\d*$/.test(inputValue)) {
+      setDisplayValue(inputValue);
+      
+      // Create a new event with the normalized value
+      const syntheticEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: inputValue
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onChange?.(syntheticEvent);
+    }
+  };
+
   return (
     <label className="block text-xs font-black uppercase tracking-[0.2em] text-neutral-600">
       <span>{label}</span>
       <div className={clsx("mt-2 flex items-center gap-2 text-sm font-medium text-neutral-900", containerClassName)}>
         <input
           {...props}
+          value={displayValue}
+          onChange={handleChange}
           className={clsx(
             compact ? "w-[182px]" : className?.includes('w-') ? "" : "flex-1",
             "rounded-xl border-2 border-neutral-900 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-[4px_4px_0_rgba(17,24,39,0.1)]",
