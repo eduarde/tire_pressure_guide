@@ -362,10 +362,9 @@ export default function App() {
         <div className="flex flex-col gap-4">
           <InputField
             label="Rider weight"
-            type="number"
+            type="text"
             inputMode="decimal"
             value={riderWeight}
-            min={0}
             onChange={(event) => {
               setRiderWeight(event.target.value);
               clearResults();
@@ -375,10 +374,9 @@ export default function App() {
           />
           <InputField
             label="Bike weight"
-            type="number"
+            type="text"
             inputMode="decimal"
             value={bikeWeight}
-            min={0}
             onChange={(event) => {
               setBikeWeight(event.target.value);
               clearResults();
@@ -427,10 +425,9 @@ export default function App() {
             </div>
             <InputField
               label="Width"
-              type="number"
+              type="text"
               inputMode="decimal"
               value={rimWidth}
-              min={0}
               onChange={(event) => {
                 setRimWidth(event.target.value);
                 setRearRimWidth(event.target.value); // Sync rear with front
@@ -468,10 +465,9 @@ export default function App() {
             </div>
             <InputField
               label="Width"
-              type="number"
+              type="text"
               inputMode="decimal"
               value={rearRimWidth}
-              min={0}
               onChange={(event) => {
                 setRearRimWidth(event.target.value);
                 clearResults();
@@ -507,11 +503,9 @@ export default function App() {
             </div>
             <InputField
               label="Width"
-              type="number"
+              type="text"
               inputMode="decimal"
               value={tireWidth}
-              min={0}
-              step="any"
               onChange={(event) => {
                 setTireWidth(event.target.value);
                 setRearTireWidth(event.target.value); // Sync rear with front
@@ -537,11 +531,9 @@ export default function App() {
             </div>
             <InputField
               label="Width"
-              type="number"
+              type="text"
               inputMode="decimal"
               value={rearTireWidth}
-              min={0}
-              step="any"
               onChange={(event) => {
                 setRearTireWidth(event.target.value);
                 clearResults();
