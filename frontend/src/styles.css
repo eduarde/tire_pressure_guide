@@ -15,18 +15,6 @@ body {
   background-size: 40px 40px, 120px 120px;
 }
 
-.cartoon-wave::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -32px;
-  height: 48px;
-  background-image: radial-gradient(circle at 24px 0, transparent 22px, #fdfcf3 23px);
-  background-size: 48px 48px;
-  background-repeat: repeat-x;
-}
-
 .cartoon-chip {
   @apply inline-flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-4 py-2 text-xs uppercase tracking-[0.3em] shadow-[4px_4px_0_rgba(17,24,39,0.12)];
 }

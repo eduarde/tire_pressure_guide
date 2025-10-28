@@ -531,9 +531,9 @@ export default function App() {
           <div className="absolute -bottom-16 left-1/2 h-48 w-48 -translate-x-1/2 rounded-[40%] bg-[radial-gradient(circle_at_center,#a7f3d0,transparent_60%)]" />
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center sm:px-8 lg:px-10">
-          <span className="inline-flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-6 py-2 text-xs font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[6px_6px_0_rgba(17,24,39,0.12)]">
+          {/* <span className="inline-flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-6 py-2 text-xs font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[6px_6px_0_rgba(17,24,39,0.12)]">
             Tire Pressure Studio
-          </span>
+          </span> */}
           <h1 className="mt-8 text-4xl font-black leading-tight text-neutral-900 sm:text-5xl lg:text-6xl">
             No charts, no guesswork — just the right pressure, every time.
           </h1>
@@ -551,7 +551,7 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="grid gap-14 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
-            <section className="cartoon-card flex h-[520px] flex-col bg-white/95 p-8">
+            <section className="cartoon-card flex h-[480px] flex-col bg-white/95 p-8">
               <div className="flex-1 space-y-8 overflow-y-auto">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -706,11 +706,11 @@ export default function App() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="cartoon-card cartoon-card--contrast flex h-[520px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
+            <div className="cartoon-card cartoon-card--contrast flex h-[480px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-200/80">Tire pressure</p>
-                  <h2 className="mt-3 text-3xl font-black">Reference</h2>
+                  <h2 className="mt-3 text-3xl font-black">Recommended</h2>
                   <p className="mt-4 text-sm text-white/70">
                     ⚠ The suggested pressures serve as an initial reference.
                   </p>
@@ -744,7 +744,7 @@ export default function App() {
                   </p>
                 ) : (
                   <p className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-3 text-center text-white/80">
-                    Complete the setup and calculate to unlock your pressures.
+                    Complete the setup and calculate to unlock your tires pressure.
                   </p>
                 )}
               </div>
