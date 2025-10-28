@@ -617,7 +617,7 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="grid gap-14 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
-            <section className="cartoon-card flex h-[550px] flex-col bg-white/95 p-8">
+            <section className="cartoon-card flex min-h-[550px] flex-col bg-white/95 p-8 lg:h-[550px]">
               <div className="flex-1 space-y-8 overflow-y-auto">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -689,7 +689,7 @@ export default function App() {
                       );
                     })}
                   </div>
-                  <div className="grid gap-3 text-[0.7rem] font-black uppercase tracking-[0.28em] text-neutral-500 sm:grid-cols-5">
+                  <div className="hidden gap-3 text-[0.7rem] font-black uppercase tracking-[0.28em] text-neutral-500 sm:grid sm:grid-cols-5">
                     {progressSteps.map((step) => (
                       <span key={`${step.label}-label`} className="text-center sm:text-left">
                         {step.label}
@@ -772,7 +772,7 @@ export default function App() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="cartoon-card cartoon-card--contrast flex h-[470px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
+            <div className="cartoon-card cartoon-card--contrast flex h-[470px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-6 text-white sm:p-8">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-200/80">Tire pressure</p>
@@ -783,16 +783,16 @@ export default function App() {
                 </div>
                 <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/50 lg:block" aria-hidden />
               </div>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-6 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)]">
+              <div className="mt-8 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)] sm:px-6">
                   <p className="text-sm font-semibold text-white/70">Front</p>
-                  <p className="mt-3 text-3xl font-black sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
-                  <p className="text-sm font-medium text-white/60">{unitLabel}</p>
+                  <p className="mt-3 text-2xl font-black sm:text-3xl lg:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
+                  <p className="mt-1 text-sm font-medium text-white/60">{unitLabel}</p>
                 </div>
-                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-6 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)]">
+                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)] sm:px-6">
                   <p className="text-sm font-semibold text-white/70">Rear</p>
-                  <p className="mt-3 text-3xl font-black sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
-                  <p className="text-sm font-medium text-white/60">{unitLabel}</p>
+                  <p className="mt-3 text-2xl font-black sm:text-3xl lg:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
+                  <p className="mt-1 text-sm font-medium text-white/60">{unitLabel}</p>
                 </div>
               </div>
               <div className="mt-6 text-sm">
