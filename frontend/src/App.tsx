@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 import { InputField, SelectField, SegmentedControl } from "./components";
 import { BoltIcon, CloudIcon } from "@heroicons/react/24/outline";
-import { SunIcon, CheckIcon } from "@heroicons/react/24/solid";
+import { SunIcon, CheckIcon, HeartIcon } from "@heroicons/react/24/solid";
 
 // Custom SVG icons for weather
 const UmbrellaIcon = ({ className }: { className?: string }) => (
@@ -771,6 +771,22 @@ export default function App() {
           </aside>
         </div>
       </main>
+
+      <footer className="border-t-4 border-neutral-900 bg-white py-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-10">
+          <p className="flex items-center justify-center gap-2 text-sm text-neutral-600">
+            Made with <HeartIcon className="h-4 w-4 text-red-500" aria-label="love" /> by{" "}
+            <a
+              href="https://eduarde.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-purple-700 transition-colors hover:text-purple-900"
+            >
+              eduarde.github.io
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
