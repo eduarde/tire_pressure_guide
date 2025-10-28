@@ -1,0 +1,3 @@
+name: tire-pressure-guide-aws
+runtime: python
+description: Deploy Tire Pressure Guide on AWS EC2 with minimal cost
