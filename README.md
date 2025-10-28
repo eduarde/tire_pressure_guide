@@ -455,6 +455,24 @@ docker-compose build --no-cache
 - **Orchestration**: Docker Compose
 - **Web Server**: Nginx (production)
 
+## 🌐 Cloud Deployment
+
+Multiple deployment options available for production hosting:
+
+### Quick Deployment (5-10 minutes)
+- **[Vercel + Railway](./infra/VERCEL_DEPLOYMENT.md)** - $5/month, best performance
+- **[Render.com](./infra/VERCEL_DEPLOYMENT.md#option-3-both-on-rendercom)** - $7/month, easiest setup
+- **[Vercel Only](./infra/VERCEL_DEPLOYMENT.md#option-2-both-on-vercel-serverless-backend)** - FREE, serverless
+
+### Full Documentation
+See **[infra/](./infra/)** directory for:
+- Complete deployment guides
+- Platform-specific configurations
+- Cost comparisons
+- Troubleshooting tips
+
+**All deployment configs are in `infra/` directory** 📁
+
 
 ---
 
