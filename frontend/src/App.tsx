@@ -2,12 +2,8 @@ import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import clsx from "clsx";
 import { InputField, SelectField, SegmentedControl } from "./components";
-import { BoltIcon } from "@heroicons/react/24/outline";
-import { 
-  SunIcon, 
-  CloudIcon as CloudIconRain,
-} from "@heroicons/react/24/solid";
-import { CloudIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import { BoltIcon, CloudIcon } from "@heroicons/react/24/outline";
+import { SunIcon, CheckIcon } from "@heroicons/react/24/solid";
 
 // Custom SVG icons for weather
 const UmbrellaIcon = ({ className }: { className?: string }) => (
@@ -524,97 +520,132 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-violet-50 text-neutral-900">
-      <header className="border-b border-purple-100/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-10">
-          <span className="inline-flex items-center rounded-full bg-purple-100 px-4 py-1 text-sm font-semibold text-purple-700">
+    <div className="min-h-screen bg-[#fdfcf3] text-neutral-900">
+      <header className="cartoon-wave relative overflow-hidden border-b-4 border-neutral-900 bg-lime-200/80 shadow-[0_18px_0_rgba(17,24,39,0.1)]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-70"
+          aria-hidden
+        >
+          <div className="absolute -left-24 top-4 h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,#fef08a,transparent_65%)]" />
+          <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-[radial-gradient(circle_at_center,#bbf7d0,transparent_60%)]" />
+          <div className="absolute -bottom-16 left-1/2 h-48 w-48 -translate-x-1/2 rounded-[40%] bg-[radial-gradient(circle_at_center,#a7f3d0,transparent_60%)]" />
+        </div>
+        <div className="relative mx-auto max-w-4xl px-6 py-24 text-center sm:px-8 lg:px-10">
+          <span className="inline-flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-6 py-2 text-xs font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[6px_6px_0_rgba(17,24,39,0.12)]">
             Tire Pressure Studio
           </span>
-          <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
+          <h1 className="mt-8 text-4xl font-black leading-tight text-neutral-900 sm:text-5xl lg:text-6xl">
             No charts, no guesswork — just the right pressure, every time.
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+          <p className="mt-6 text-base leading-relaxed text-neutral-700 sm:text-lg">
             Guide your setup from weight to casing in a few quick steps, then review tailored recommendations aligned to your terrain, rims, and riding discipline.
           </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm font-semibold text-neutral-800">
+            <span className="cartoon-chip">Precise setup wizard</span>
+            <span className="cartoon-chip">Discipline-aware guidance</span>
+            <span className="cartoon-chip">Instant tire targets</span>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[3fr_2fr]">
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-10">
+        <div className="grid gap-14 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
-            <section className="flex h-[480px] flex-col rounded-3xl border border-purple-100/80 bg-white/90 p-8 shadow-xl shadow-purple-200/50 backdrop-blur">
+            <section className="cartoon-card flex h-[520px] flex-col bg-white/95 p-8">
               <div className="flex-1 space-y-8 overflow-y-auto">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-purple-600">Setup progress</p>
-                  <p className="text-sm text-purple-500">{progressPercent}% complete</p>
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.3em] text-neutral-800">Setup progress</p>
+                    <p className="text-sm text-neutral-500">{progressPercent}% ready</p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <SegmentedControl
+                      value={massUnit}
+                      onChange={(value) => {
+                        setMassUnit(value);
+                        clearResults();
+                      }}
+                      options={[
+                        { label: "kg", value: "kg" },
+                        { label: "lbs", value: "lbs" }
+                      ]}
+                    />
+                    <SegmentedControl
+                      value={pressureUnit}
+                      onChange={(value) => {
+                        setPressureUnit(value);
+                      }}
+                      options={[
+                        { label: "psi", value: "PSI" },
+                        { label: "bar", value: "BAR" }
+                      ]}
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <SegmentedControl
-                    value={massUnit}
-                    onChange={(value) => {
-                      setMassUnit(value);
-                      clearResults();
-                    }}
-                    options={[
-                      { label: "kg", value: "kg" },
-                      { label: "lbs", value: "lbs" }
-                    ]}
-                  />
-                  <SegmentedControl
-                    value={pressureUnit}
-                    onChange={(value) => {
-                      setPressureUnit(value);
-                    }}
-                    options={[
-                      { label: "psi", value: "PSI" },
-                      { label: "bar", value: "BAR" }
-                    ]}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-purple-100">
-                  <div
-                    className="h-full rounded-full bg-purple-500 transition-[width] duration-300"
-                    style={{ width: `${progressPercent}%` }}
-                    aria-hidden
-                  />
-                </div>
-                <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-5">
-                  {progressSteps.map((step, index) => (
-                    <div key={step.label} className="flex items-center gap-2">
-                      <span
-                        className={clsx(
-                          "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold",
-                          step.complete
-                            ? "border-purple-500 bg-purple-500 text-white"
-                            : "border-purple-100 bg-white text-neutral-400"
-                        )}
-                      >
-                        {index + 1}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    {progressSteps.map((step, index) => {
+                      const isCompleted = step.complete;
+                      const isCurrent = currentStep === index;
+                      const connectorActive = index < completedSteps;
+
+                      return (
+                        <div
+                          key={step.label}
+                          className={clsx(
+                            "flex items-center",
+                            index < progressSteps.length - 1 ? "flex-1" : "flex-none"
+                          )}
+                        >
+                          <span
+                            className={clsx(
+                              "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-[3px] text-base font-bold transition-all",
+                              isCompleted
+                                ? "border-neutral-900 bg-neutral-900 text-white"
+                                : isCurrent
+                                  ? "border-neutral-900 bg-white text-neutral-900 shadow-[4px_4px_0_rgba(17,24,39,0.12)]"
+                                  : "border-neutral-300 bg-white text-neutral-300"
+                            )}
+                          >
+                            {isCompleted ? <CheckIcon className="h-5 w-5" aria-hidden /> : index + 1}
+                          </span>
+                          {index < progressSteps.length - 1 ? (
+                            <span
+                              aria-hidden
+                              className={clsx(
+                                "mx-2 hidden h-1 flex-1 rounded-full transition-all sm:block",
+                                connectorActive ? "bg-neutral-900" : "bg-neutral-300/80"
+                              )}
+                            />
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="grid gap-3 text-[0.7rem] font-black uppercase tracking-[0.28em] text-neutral-500 sm:grid-cols-5">
+                    {progressSteps.map((step) => (
+                      <span key={`${step.label}-label`} className="text-center sm:text-left">
+                        {step.label}
                       </span>
-                      <span className="font-medium">{step.label}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+
+                <form id="setup-form" className="space-y-10" onSubmit={handleSubmit}>
+                  {activeStep ? (
+                    <section key={activeStep.key} className="space-y-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                        {activeStep.label}
+                      </p>
+                      {activeStep.content}
+                    </section>
+                  ) : null}
+                </form>
               </div>
+            </section>
 
-              <form id="setup-form" className="space-y-10" onSubmit={handleSubmit}>
-                {activeStep ? (
-                  <section key={activeStep.key} className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
-                      {activeStep.label}
-                    </p>
-                    {activeStep.content}
-                  </section>
-                ) : null}
-              </form>
-            </div>
-          </section>
-
-          {/* Navigation Buttons */}
+            {/* Navigation Buttons */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
@@ -622,10 +653,10 @@ export default function App() {
                 onClick={handleBack}
                 disabled={!canGoBack}
                 className={clsx(
-                  "w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                  "w-full rounded-full border-2 border-neutral-900 bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[4px_4px_0_rgba(17,24,39,0.12)] transition-transform sm:w-auto",
                   canGoBack
-                    ? "text-purple-600 hover:border-purple-300 hover:text-purple-700"
-                    : "cursor-not-allowed text-purple-300"
+                    ? "hover:-translate-y-[2px]"
+                    : "cursor-not-allowed opacity-40 hover:translate-y-0"
                 )}
               >
                 Previous
@@ -634,7 +665,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="w-full rounded-full border border-purple-200 bg-white/70 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-600 transition hover:border-purple-300 hover:text-purple-700 sm:w-auto"
+                  className="w-full rounded-full border-2 border-neutral-900 bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[4px_4px_0_rgba(17,24,39,0.12)] transition-transform hover:-translate-y-[2px] sm:w-auto"
                 >
                   Reset
                 </button>
@@ -647,10 +678,10 @@ export default function App() {
                   onClick={handleNext}
                   disabled={!canGoNext}
                   className={clsx(
-                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    "w-full rounded-full border-2 border-neutral-900 px-6 py-3 text-sm font-black uppercase tracking-[0.3em] transition-transform sm:w-auto",
                     canGoNext
-                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                      ? "bg-neutral-900 text-lime-100 shadow-[6px_6px_0_rgba(17,24,39,0.18)] hover:-translate-y-[2px]"
+                      : "cursor-not-allowed border-neutral-300 bg-neutral-200 text-neutral-500"
                   )}
                 >
                   {nextStepLabel ? `Next: ${nextStepLabel}` : "Next"}
@@ -661,10 +692,10 @@ export default function App() {
                   form="setup-form"
                   disabled={!canCalculate}
                   className={clsx(
-                    "w-full rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] transition sm:w-auto",
+                    "w-full rounded-full border-2 border-neutral-900 px-6 py-3 text-sm font-black uppercase tracking-[0.3em] transition-transform sm:w-auto",
                     canCalculate
-                      ? "bg-purple-500 text-white shadow-lg shadow-purple-400/40 hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200"
-                      : "cursor-not-allowed bg-purple-100 text-purple-400"
+                      ? "bg-neutral-900 text-lime-100 shadow-[6px_6px_0_rgba(17,24,39,0.18)] hover:-translate-y-[2px]"
+                      : "cursor-not-allowed border-neutral-300 bg-neutral-200 text-neutral-500"
                   )}
                 >
                   {isCalculating ? "Calculating…" : "Calculate"}
@@ -675,44 +706,44 @@ export default function App() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="flex h-[480px] flex-col rounded-3xl border border-purple-900/40 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white shadow-2xl shadow-purple-900/60">
-              <div className="flex-shrink-0 flex items-start justify-between gap-6">
+            <div className="cartoon-card cartoon-card--contrast flex h-[520px] flex-col bg-gradient-to-br from-purple-700 via-purple-800 to-purple-950 p-8 text-white">
+              <div className="flex items-start justify-between gap-6">
                 <div>
-                  <p className="text-sm font-medium text-purple-200/90">Tire pressure</p>
-                  <h2 className="mt-2 text-3xl font-semibold">Reference</h2>
-                  <p className="mt-4 text-sm text-white/60">
-                    ⚠ The suggested pressures serve as an initial reference. 
-                    </p>
+                  <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-200/80">Tire pressure</p>
+                  <h2 className="mt-3 text-3xl font-black">Reference</h2>
+                  <p className="mt-4 text-sm text-white/70">
+                    ⚠ The suggested pressures serve as an initial reference.
+                  </p>
                 </div>
-                <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/40 lg:block" aria-hidden />
+                <BoltIcon className="hidden h-12 w-12 shrink-0 text-purple-200/50 lg:block" aria-hidden />
               </div>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/40">
-                  <p className="text-sm font-medium text-white/60">Front</p>
-                  <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
-                  <p className="text-sm font-medium text-white/50">{unitLabel}</p>
+                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-6 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)]">
+                  <p className="text-sm font-semibold text-white/70">Front</p>
+                  <p className="mt-3 text-3xl font-black sm:text-4xl">{showResults && pressures ? formatNumber(pressures.front) : "--"}</p>
+                  <p className="text-sm font-medium text-white/60">{unitLabel}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-center shadow-lg shadow-black/40">
-                  <p className="text-sm font-medium text-white/60">Rear</p>
-                  <p className="mt-3 text-3xl font-semibold sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
-                  <p className="text-sm font-medium text-white/50">{unitLabel}</p>
+                <div className="rounded-2xl border-2 border-white/30 bg-white/10 px-6 py-6 text-center shadow-[6px_6px_0_rgba(15,23,42,0.2)]">
+                  <p className="text-sm font-semibold text-white/70">Rear</p>
+                  <p className="mt-3 text-3xl font-black sm:text-4xl">{showResults && pressures ? formatNumber(pressures.rear) : "--"}</p>
+                  <p className="text-sm font-medium text-white/60">{unitLabel}</p>
                 </div>
               </div>
               <div className="mt-6 text-sm">
                 {isCalculating ? (
-                  <p className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center text-purple-100/90">
+                  <p className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-3 text-center text-purple-100/90">
                     Crunching the numbers…
                   </p>
                 ) : errorMessage ? (
-                  <p className="rounded-2xl border border-white/10 bg-rose-500/20 px-4 py-3 text-center font-medium text-rose-100">
+                  <p className="rounded-2xl border-2 border-rose-200/60 bg-rose-500/30 px-4 py-3 text-center font-semibold text-rose-100">
                     {errorMessage}
                   </p>
                 ) : showResults ? (
-                  <p className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/70">
+                  <p className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-3 text-center text-white/80">
                     Further adjustments are recommended to fine-tune performance for your specific setup and riding conditions.
                   </p>
                 ) : (
-                  <p className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-white/70">
+                  <p className="rounded-2xl border-2 border-white/30 bg-white/10 px-4 py-3 text-center text-white/80">
                     Complete the setup and calculate to unlock your pressures.
                   </p>
                 )}
@@ -720,19 +751,19 @@ export default function App() {
             </div>
 
             {/* Recommendations Section */}
-            <div className="rounded-3xl border border-purple-100/70 bg-white/80 p-6 shadow-lg shadow-purple-100/70">
-              <h3 className="text-lg font-semibold text-neutral-900">Recommendations</h3>
-              <ul className="mt-4 space-y-3 text-sm text-neutral-600">
+            <div className="cartoon-card bg-white/95 p-6">
+              <h3 className="text-lg font-black text-neutral-900">Recommendations</h3>
+              <ul className="mt-4 space-y-3 text-sm text-neutral-700">
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-neutral-900" aria-hidden />
                   Balance grip and speed by letting the front run slightly lower than the rear.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-neutral-900" aria-hidden />
                   Recheck pressure before each ride—temperature swings can move readings by 1-2 {unitLabel}.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-400" aria-hidden />
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-neutral-900" aria-hidden />
                   Adjust ±1 {unitLabel} to tune comfort once you sample the day's terrain.
                 </li>
               </ul>
