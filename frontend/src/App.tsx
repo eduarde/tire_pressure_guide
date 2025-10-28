@@ -287,10 +287,10 @@ export default function App() {
                 clearResults();
               }}
               className={clsx(
-                "rounded-lg border border-purple-100 bg-white px-4 py-3 text-left text-sm font-semibold transition",
+                "rounded-full border-2 border-neutral-900 bg-white px-4 py-3 text-sm font-semibold transition-all",
                 discipline === option.value
-                  ? "border-purple-500 bg-purple-500/10 text-purple-700 shadow-sm"
-                  : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
+                  ? "bg-purple-100 text-purple-700 shadow-[4px_4px_0_rgba(17,24,39,0.12)]"
+                  : "text-neutral-600 hover:bg-purple-50 hover:text-purple-700"
               )}
             >
               {option.label}
@@ -316,10 +316,10 @@ export default function App() {
                   clearResults();
                 }}
                 className={clsx(
-                  "flex items-center gap-2 rounded-full border border-purple-100 bg-white px-4 py-2 text-sm font-medium transition",
+                  "flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-4 py-3 text-sm font-semibold transition-all",
                   surface === option.value
-                    ? "border-purple-500 bg-purple-100 text-purple-700 shadow-sm"
-                    : "text-neutral-600 hover:border-purple-200 hover:text-purple-700"
+                    ? "bg-purple-100 text-purple-700 shadow-[4px_4px_0_rgba(17,24,39,0.12)]"
+                    : "text-neutral-600 hover:bg-purple-50 hover:text-purple-700"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -335,31 +335,35 @@ export default function App() {
       label: "Weight",
       complete: weightComplete,
       content: (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <InputField
-            label="Rider weight"
-            type="number"
-            inputMode="decimal"
-            value={riderWeight}
-            min={0}
-            onChange={(event) => {
-              setRiderWeight(event.target.value);
-              clearResults();
-            }}
-            unit={massUnit}
-          />
-          <InputField
-            label="Bike weight"
-            type="number"
-            inputMode="decimal"
-            value={bikeWeight}
-            min={0}
-            onChange={(event) => {
-              setBikeWeight(event.target.value);
-              clearResults();
-            }}
-            unit={massUnit}
-          />
+        <div className="flex flex-col gap-4">
+          <div className="max-w-[200px]">
+            <InputField
+              label="Rider weight"
+              type="number"
+              inputMode="decimal"
+              value={riderWeight}
+              min={0}
+              onChange={(event) => {
+                setRiderWeight(event.target.value);
+                clearResults();
+              }}
+              unit={massUnit}
+            />
+          </div>
+          <div className="max-w-[200px]">
+            <InputField
+              label="Bike weight"
+              type="number"
+              inputMode="decimal"
+              value={bikeWeight}
+              min={0}
+              onChange={(event) => {
+                setBikeWeight(event.target.value);
+                clearResults();
+              }}
+              unit={massUnit}
+            />
+          </div>
         </div>
       )
     },
@@ -368,23 +372,25 @@ export default function App() {
       label: "Rims",
       complete: rimsComplete,
       content: (
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-3">
             <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
-            <SelectField
-              label="Rim type"
-              value={rimType}
-              placeholder="Select rim type"
-              onChange={(event) => {
-                const value = event.target.value as RimType | "";
-                setRimType(value);
-                setRearRimType(value); // Sync rear with front
-                clearResults();
-              }}
-              options={rimTypeOptions}
-            />
+            <div className="max-w-[180px]">
+              <SelectField
+                label="Type"
+                value={rimType}
+                placeholder="Select type"
+                onChange={(event) => {
+                  const value = event.target.value as RimType | "";
+                  setRimType(value);
+                  setRearRimType(value); // Sync rear with front
+                  clearResults();
+                }}
+                options={rimTypeOptions}
+              />
+            </div>
             <InputField
-              label="Rim width"
+              label="Width"
               type="number"
               inputMode="decimal"
               value={rimWidth}
@@ -395,22 +401,25 @@ export default function App() {
                 clearResults();
               }}
               unit="mm"
+              compact
             />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
-            <SelectField
-              label="Rim type"
-              value={rearRimType}
-              placeholder="Select rim type"
-              onChange={(event) => {
-                setRearRimType(event.target.value as RimType | "");
-                clearResults();
-              }}
-              options={rimTypeOptions}
-            />
+            <div className="max-w-[180px]">
+              <SelectField
+                label="Type"
+                value={rearRimType}
+                placeholder="Select type"
+                onChange={(event) => {
+                  setRearRimType(event.target.value as RimType | "");
+                  clearResults();
+                }}
+                options={rimTypeOptions}
+              />
+            </div>
             <InputField
-              label="Rim width"
+              label="Width"
               type="number"
               inputMode="decimal"
               value={rearRimWidth}
@@ -420,6 +429,7 @@ export default function App() {
                 clearResults();
               }}
               unit="mm"
+              compact
             />
           </div>
         </div>
@@ -430,9 +440,23 @@ export default function App() {
       label: "Tires",
       complete: tireComplete,
       content: (
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-3">
             <h3 className="text-sm font-semibold text-neutral-700">Front</h3>
+            <div className="max-w-[180px]">
+              <SelectField
+                label="Casing"
+                value={tireCasing}
+                placeholder="Select casing"
+                onChange={(event) => {
+                  const value = event.target.value as TireCasing | "";
+                  setTireCasing(value);
+                  setRearTireCasing(value); // Sync rear with front
+                  clearResults();
+                }}
+                options={casingOptions}
+              />
+            </div>
             <InputField
               label="Width"
               type="number"
@@ -446,22 +470,23 @@ export default function App() {
                 clearResults();
               }}
               unit={widthUnit === "IN" ? "in" : "mm"}
-            />
-            <SelectField
-              label="Casing"
-              value={tireCasing}
-              placeholder="Select casing"
-              onChange={(event) => {
-                const value = event.target.value as TireCasing | "";
-                setTireCasing(value);
-                setRearTireCasing(value); // Sync rear with front
-                clearResults();
-              }}
-              options={casingOptions}
+              compact
             />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-sm font-semibold text-neutral-700">Rear</h3>
+            <div className="max-w-[180px]">
+              <SelectField
+                label="Casing"
+                value={rearTireCasing}
+                placeholder="Select casing"
+                onChange={(event) => {
+                  setRearTireCasing(event.target.value as TireCasing | "");
+                  clearResults();
+                }}
+                options={casingOptions}
+              />
+            </div>
             <InputField
               label="Width"
               type="number"
@@ -474,16 +499,7 @@ export default function App() {
                 clearResults();
               }}
               unit={widthUnit === "IN" ? "in" : "mm"}
-            />
-            <SelectField
-              label="Casing"
-              value={rearTireCasing}
-              placeholder="Select casing"
-              onChange={(event) => {
-                setRearTireCasing(event.target.value as TireCasing | "");
-                clearResults();
-              }}
-              options={casingOptions}
+              compact
             />
           </div>
         </div>
