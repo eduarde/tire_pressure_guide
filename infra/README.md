@@ -84,13 +84,6 @@ See [aws/README.md](./aws/README.md) for detailed instructions.
 - You're comfortable with server management
 - You have AWS free tier available
 
-### Use Vercel When:
-- You want the quickest deployment
-- You don't want to manage servers
-- You need automatic SSL/HTTPS
-- You want zero configuration
-- Cold starts are acceptable
-
 ---
 
 **Current Setup**: This repository uses **AWS EC2 with Pulumi Python SDK** for infrastructure as code deployment.
