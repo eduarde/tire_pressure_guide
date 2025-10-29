@@ -588,18 +588,19 @@ export default function App() {
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center sm:px-8 lg:px-10">
           {/* <span className="inline-flex items-center gap-2 rounded-full border-2 border-neutral-900 bg-white px-6 py-2 text-xs font-black uppercase tracking-[0.3em] text-neutral-900 shadow-[6px_6px_0_rgba(17,24,39,0.12)]">
-            Tire Pressure Studio
+            tubeless-only
           </span> */}
           <h1 className="mt-8 text-4xl font-black leading-tight text-neutral-900 sm:text-5xl lg:text-6xl">
-            No charts, no guesswork — just the right pressure, every time.
+           Confidence starts where your tires meet the ground.
           </h1>
           <p className="mt-6 text-base leading-relaxed text-neutral-700 sm:text-lg">
-            Guide your setup from weight to casing in a few quick steps, then review tailored recommendations aligned to your terrain, rims, and riding discipline.
+          Built on the science of top performance brands — no charts, no guesswork, just the right pressure, every time.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm font-semibold text-neutral-800">
             <span className="cartoon-chip">Precise setup wizard</span>
             <span className="cartoon-chip">Discipline-aware guidance</span>
             <span className="cartoon-chip">Instant tire targets</span>
+            <span className="cartoon-chip">Tubeless-only</span>
           </div>
         </div>
       </header>
