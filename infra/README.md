@@ -53,6 +53,25 @@ pulumi config set tire-pressure-guide-aws:key_name your-key-pair-name
 
 # Deploy
 pulumi up
+
+# Redeploy
+pulumi up --replace "urn:pulumi:dev::tire-pressure-guide-aws::aws:ec2/instance:Instance::tire-pressure-instance"
+```
+
+For future updates to your code:
+```bash
+# SSH into the instance
+ssh -i ~/.ssh/tire-pressure-key.pem ec2-user@18.193.90.181
+
+# Update code
+cd tire_pressure_guide
+git pull
+
+# Rebuild and restart
+sudo docker-compose down
+sudo docker build -t tire_pressure_guide-backend:latest .
+cd frontend && sudo docker build -t tire_pressure_guide-frontend:latest --build-arg VITE_API_URL=http://18.193.90.181:8088 . && cd ..
+sudo docker-compose up -d
 ```
 
 See [aws/README.md](./aws/README.md) for detailed instructions.

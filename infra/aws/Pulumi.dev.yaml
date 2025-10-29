@@ -2,3 +2,4 @@ config:
   aws:region: eu-central-1
   tire-pressure-guide-aws:key_name: tire-pressure-key # CHANGE THIS to your AWS key pair name
   tire-pressure-guide-aws:instance_type: t2.micro # Free tier eligible
+  tire-pressure-guide-aws:domain_name: tunelab.cc

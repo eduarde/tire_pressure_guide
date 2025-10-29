@@ -148,14 +148,17 @@ security_group = aws.ec2.SecurityGroup(
 )
 
 # User data script to setup Docker and run the application
-user_data = """#!/bin/bash
+domain_name = config.get("domain_name")
+allowed_origins = f"http://{domain_name},https://{domain_name}" if domain_name else "http://$(ec2-metadata --public-ipv4 | cut -d ' ' -f 2):3000"
+
+user_data_script = f"""#!/bin/bash
 set -e
 
 # Update system
 yum update -y
 
-# Install Docker
-yum install -y docker git
+# Install Docker, Nginx, and Git
+yum install -y docker nginx git
 
 # Start Docker service
 systemctl start docker
@@ -169,19 +172,118 @@ curl -L "https://github.com/docker/compose/releases/latest/download/docker-compo
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-# Clone repository (you'll need to update this with your repo URL)
+# Clone repository
 cd /home/ec2-user
 git clone https://github.com/eduarde/tire_pressure_guide.git
 cd tire_pressure_guide
 
-# Create .env file for production
-cat > .env << 'EOF'
-ENVIRONMENT=production
-ALLOWED_ORIGINS=http://$(ec2-metadata --public-ipv4 | cut -d ' ' -f 2):3000
-EOF
+# Fix ownership
+chown -R ec2-user:ec2-user /home/ec2-user/tire_pressure_guide
 
-# Start services with Docker Compose
-docker-compose up -d
+# Get public IP
+PUBLIC_IP=$(ec2-metadata --public-ipv4 | cut -d ' ' -f 2)
+
+# Create .env file for production
+cat > .env << 'ENVEOF'
+ENVIRONMENT=production
+ALLOWED_ORIGINS={allowed_origins}
+ENVEOF
+
+# Build and start services
+docker build -t tire_pressure_guide-backend:latest .
+cd frontend
+docker build -t tire_pressure_guide-frontend:latest --build-arg VITE_API_URL=http://{"$PUBLIC_IP" if not domain_name else f"api.{domain_name}"}:8088 .
+cd ..
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'COMPOSEEOF'
+version: '3.8'
+
+services:
+  backend:
+    image: tire_pressure_guide-backend:latest
+    container_name: tire-pressure-backend
+    ports:
+      - "8088:8088"
+    environment:
+      - ENVIRONMENT=production
+      - ALLOWED_ORIGINS={allowed_origins}
+    networks:
+      - tire-pressure-network
+
+  frontend:
+    image: tire_pressure_guide-frontend:latest
+    container_name: tire-pressure-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - tire-pressure-network
+
+networks:
+  tire-pressure-network:
+    driver: bridge
+COMPOSEEOF
+
+docker-compose up -d"""
+
+if domain_name:
+    user_data_script += f"""
+
+# Configure Nginx as reverse proxy
+cat > /tmp/nginx-tunelab.conf << 'NGINXEOF'
+server {{{{
+    listen 80;
+    server_name {domain_name} www.{domain_name};
+
+    location / {{{{
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $$host;
+        proxy_cache_bypass $$http_upgrade;
+    }}}}
+}}}}
+
+server {{{{
+    listen 80;
+    server_name api.{domain_name};
+
+    location / {{{{
+        proxy_pass http://localhost:8088;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $$host;
+        proxy_cache_bypass $$http_upgrade;
+    }}}}
+}}}}
+NGINXEOF
+
+mv /tmp/nginx-tunelab.conf /etc/nginx/conf.d/tunelab.conf
+
+# Start Nginx
+systemctl start nginx
+systemctl enable nginx
+
+# Install Certbot and obtain SSL certificates
+yum install -y certbot python3-certbot-nginx
+
+# Wait for DNS to propagate (in case of new instance)
+sleep 30
+
+# Get SSL certificates
+certbot --nginx -d {domain_name} -d www.{domain_name} -d api.{domain_name} --non-interactive --agree-tos --email eduarderja@gmail.com --redirect || echo "SSL certificate installation failed, will retry later"
+
+# Enable auto-renewal
+systemctl start certbot-renew.timer
+systemctl enable certbot-renew.timer
+"""
+
+user_data_script += """
+
 
 # Setup auto-start on reboot
 cat > /etc/systemd/system/tire-pressure.service << 'EOFS'
@@ -215,7 +317,7 @@ instance = aws.ec2.Instance(
     key_name=key_name,
     subnet_id=public_subnet.id,
     vpc_security_group_ids=[security_group.id],
-    user_data=user_data,
+    user_data=user_data_script,
     associate_public_ip_address=True,
     tags={
         "Name": "tire-pressure-guide",
@@ -238,6 +340,49 @@ eip = aws.ec2.Eip(
         "Name": "tire-pressure-eip",
     },
 )
+
+# Route 53 Configuration for custom domain
+domain_name = config.get("domain_name")  # Optional: tunelab.cc
+
+if domain_name:
+    # Get the hosted zone for the domain
+    zone = aws.route53.get_zone(name=domain_name)
+    
+    # Create A record for root domain pointing to EC2 instance
+    root_record = aws.route53.Record(
+        "root-domain-record",
+        zone_id=zone.zone_id,
+        name=domain_name,
+        type="A",
+        ttl=300,
+        records=[eip.public_ip],
+    )
+    
+    # Create A record for www subdomain
+    www_record = aws.route53.Record(
+        "www-domain-record",
+        zone_id=zone.zone_id,
+        name=f"www.{domain_name}",
+        type="A",
+        ttl=300,
+        records=[eip.public_ip],
+    )
+    
+    # Create A record for api subdomain (for backend)
+    api_record = aws.route53.Record(
+        "api-domain-record",
+        zone_id=zone.zone_id,
+        name=f"api.{domain_name}",
+        type="A",
+        ttl=300,
+        records=[eip.public_ip],
+    )
+    
+    pulumi.export("domain", domain_name)
+    pulumi.export("www_domain", f"www.{domain_name}")
+    pulumi.export("api_domain", f"api.{domain_name}")
+    pulumi.export("domain_frontend_url", f"http://{domain_name}:3000")
+    pulumi.export("domain_backend_url", f"http://api.{domain_name}:8088")
 
 # Exports
 pulumi.export("instance_id", instance.id)
