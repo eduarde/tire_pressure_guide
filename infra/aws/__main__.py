@@ -149,10 +149,14 @@ security_group = aws.ec2.SecurityGroup(
 
 # User data script to setup Docker and run the application
 domain_name = config.get("domain_name")
-allowed_origins = f"http://{domain_name},https://{domain_name}" if domain_name else "http://$(ec2-metadata --public-ipv4 | cut -d ' ' -f 2):3000"
+if domain_name:
+    allowed_origins = f"http://{domain_name},https://{domain_name},http://www.{domain_name},https://www.{domain_name},http://api.{domain_name},https://api.{domain_name}"
+else:
+    allowed_origins = "http://$(ec2-metadata --public-ipv4 | cut -d ' ' -f 2):3000"
 
 user_data_script = f"""#!/bin/bash
-set -e
+set -x
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Update system
 yum update -y
@@ -192,7 +196,7 @@ ENVEOF
 # Build and start services
 docker build -t tire_pressure_guide-backend:latest .
 cd frontend
-docker build -t tire_pressure_guide-frontend:latest --build-arg VITE_API_URL=http://{"$PUBLIC_IP" if not domain_name else f"api.{domain_name}"}:8088 .
+docker build -t tire_pressure_guide-frontend:latest --build-arg VITE_API_URL={"http://$PUBLIC_IP:8088" if not domain_name else f"https://api.{domain_name}"} .
 cd ..
 
 # Create docker-compose.yml
@@ -229,38 +233,38 @@ COMPOSEEOF
 docker-compose up -d"""
 
 if domain_name:
+    # Create Nginx config using Python to avoid shell escaping issues
     user_data_script += f"""
 
-# Configure Nginx as reverse proxy
-cat > /tmp/nginx-tunelab.conf << 'NGINXEOF'
-server {{{{
+# Configure Nginx as reverse proxy using Python to avoid escaping issues
+python3 << 'PYSCRIPT'
+config = \"\"\"server {{
     listen 80;
     server_name {domain_name} www.{domain_name};
-
-    location / {{{{
+    location / {{
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $$host;
-        proxy_cache_bypass $$http_upgrade;
-    }}}}
-}}}}
-
-server {{{{
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }}
+}}
+server {{
     listen 80;
     server_name api.{domain_name};
-
-    location / {{{{
+    location / {{
         proxy_pass http://localhost:8088;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $$host;
-        proxy_cache_bypass $$http_upgrade;
-    }}}}
-}}}}
-NGINXEOF
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }}
+}}\"\"\"
+with open('/tmp/nginx-tunelab.conf', 'w') as f:
+    f.write(config)
+PYSCRIPT
 
 mv /tmp/nginx-tunelab.conf /etc/nginx/conf.d/tunelab.conf
 
@@ -268,18 +272,14 @@ mv /tmp/nginx-tunelab.conf /etc/nginx/conf.d/tunelab.conf
 systemctl start nginx
 systemctl enable nginx
 
-# Install Certbot and obtain SSL certificates
-yum install -y certbot python3-certbot-nginx
-
-# Wait for DNS to propagate (in case of new instance)
-sleep 30
-
-# Get SSL certificates
-certbot --nginx -d {domain_name} -d www.{domain_name} -d api.{domain_name} --non-interactive --agree-tos --email eduarderja@gmail.com --redirect || echo "SSL certificate installation failed, will retry later"
-
-# Enable auto-renewal
-systemctl start certbot-renew.timer
-systemctl enable certbot-renew.timer
+# Install Certbot and obtain SSL certificates (run in background, don't block)
+(
+  sleep 60  # Wait for services to be fully up
+  yum install -y certbot python3-certbot-nginx || true
+  certbot --nginx -d {domain_name} -d www.{domain_name} -d api.{domain_name} --non-interactive --agree-tos --email eduarderja@gmail.com --redirect || echo "SSL certificate installation failed, will retry later"
+  systemctl start certbot-renew.timer || true
+  systemctl enable certbot-renew.timer || true
+) &
 """
 
 user_data_script += """
