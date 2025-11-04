@@ -29,7 +29,13 @@ const initializeGoogleTagManager = (id: string) => {
   firstScript?.parentNode?.insertBefore(gtmScript, firstScript);
 
   const noScript = document.createElement("noscript");
-  noScript.innerHTML = `\n      <iframe src="https://www.googletagmanager.com/ns.html?id=${id}" height="0" width="0" style="display:none;visibility:hidden"></iframe>\n    `;
+  const iframe = document.createElement("iframe");
+  iframe.src = `https://www.googletagmanager.com/ns.html?id=${id}`;
+  iframe.height = "0";
+  iframe.width = "0";
+  iframe.style.display = "none";
+  iframe.style.visibility = "hidden";
+  noScript.appendChild(iframe);
   document.body.insertBefore(noScript, document.body.firstChild);
 };
 
