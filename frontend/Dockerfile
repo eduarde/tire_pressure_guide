@@ -7,6 +7,10 @@ WORKDIR /app
 ARG VITE_API_URL=http://localhost:8088
 ENV VITE_API_URL=$VITE_API_URL
 
+# Build argument for Google Tag Manager ID
+ARG VITE_GTM_ID
+ENV VITE_GTM_ID=$VITE_GTM_ID
+
 # Install dependencies first for better caching
 COPY package.json package-lock.json ./
 
