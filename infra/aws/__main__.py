@@ -326,7 +326,7 @@ instance = aws.ec2.Instance(
     monitoring=False,
     # Root volume configuration (free tier includes 30GB)
     root_block_device=aws.ec2.InstanceRootBlockDeviceArgs(
-        volume_size=20,  # GB - well within free tier
+        volume_size=30,  # GB - matches AMI snapshot requirement
         volume_type="gp3",  # Cheaper than gp2
         delete_on_termination=True,
     ),
