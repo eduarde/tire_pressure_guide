@@ -14,7 +14,8 @@ declare global {
 }
 
 const initializeGoogleTagManager = (id: string) => {
-  const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtm.js?id=${id}"]`);
+  const escapedId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(id) : id;
+  const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtm.js?id=${escapedId}"]`);
   if (existingScript) {
     return;
   }
